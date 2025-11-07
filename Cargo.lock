@@ -18,8 +18,8 @@ dependencies = [
 ]
 
 [[package]]
-name = "neural_lib_2"
-version = "0.1.0"
+name = "neuralib"
+version = "0.0.1"
 dependencies = [
  "fastnum",
 ]
