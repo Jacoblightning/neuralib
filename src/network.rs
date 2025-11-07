@@ -1,4 +1,5 @@
 use crate::layer::Layer;
+use crate::activation::Activation;
 
 pub struct NeuralNetwork {
 	layers: Vec<Layer>,
@@ -6,9 +7,14 @@ pub struct NeuralNetwork {
 }
 
 impl NeuralNetwork {
-	pub fn new(layer_sizes: &[usize], input_size: usize) -> crate::error::Result<NeuralNetwork> {
+	pub fn new(layer_sizes: &[usize], input_size: usize, activation_functions: Vec<Activation>) -> crate::error::Result<NeuralNetwork> {
 		if layer_sizes.is_empty() {
 			return Err(crate::error::NoLayersError {}.into());
+		}
+
+		if layer_sizes.len() != activation_functions.len() {
+			// TODO: Make custom error for this
+			return Err(crate::error::NoLayersError {}.into())
 		}
 	
 		// Allocate a vector for the layers
@@ -16,8 +22,8 @@ impl NeuralNetwork {
 
 
 		let mut previous_size = &input_size;
-		for layer_size in layer_sizes {
-			layers.push(Layer::new(*previous_size, *layer_size));
+		for (layer_size, activator) in layer_sizes.iter().zip(activation_functions) {
+			layers.push(Layer::new(*previous_size, *layer_size, activator));
 			previous_size = layer_size;
 		}
 

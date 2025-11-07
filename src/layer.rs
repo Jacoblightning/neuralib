@@ -1,15 +1,15 @@
 use crate::neuron::Neuron;
+use crate::activation::Activation;
 
-#[derive(Clone)]
 pub struct Layer {
 	neurons: Vec<Neuron>,
 	input_size: usize
 }
 
 impl Layer {
-	pub fn new(input_size: usize, layer_size: usize) -> Layer {
+	pub fn new(input_size: usize, layer_size: usize, activation: Activation) -> Layer {
 		Layer {
-			neurons: vec![Neuron::new(input_size); layer_size],
+			neurons: (0..layer_size).map(|_| Neuron::new(input_size, activation.clone())).collect(),
 			input_size,
 		}
 	}

@@ -1,16 +1,16 @@
 use rand::prelude::*;
 use rand_distr::StandardNormal;
+use crate::activation::Activation;
 
-#[derive(Clone)]
 pub struct Neuron {
     weights: Vec<f64>,
     bias: f64,
     input_size: usize,
-    //output: dyn Fn(D64) -> D64,
+    activation: Activation,
 }
 
 impl Neuron {
-    pub fn new(input_size: usize) -> Neuron {
+    pub fn new(input_size: usize, activation: Activation) -> Neuron {
         // Initalize weights based off of https://cs231n.github.io/neural-networks-2/#init
         let divi = (2.0 / (input_size as f64)).sqrt();
         let weights: Vec<f64> = rand::rng().sample_iter(StandardNormal).take(input_size).map(|x: f64| {x * divi}).collect();
@@ -19,6 +19,7 @@ impl Neuron {
             weights,
             bias: 0.0,
             input_size,
+            activation,
         }
     }
     
@@ -42,9 +43,9 @@ impl Neuron {
         // Add the bias
         let biased = weighted + self.bias;
 
-        // TODO: use activation/output function
+        let activated = self.activation.call(biased);
         
-        Ok(biased)
+        Ok(activated)
     }
 
     pub fn get_weights(&self) -> &[f64] {
@@ -75,6 +76,7 @@ mod tests {
             weights: vec![1.0],
             bias: 0.0,
             input_size: 1,
+            activation: Activation::Linear,
         };
 
 
@@ -92,6 +94,7 @@ mod tests {
             weights: vec![2.0, 3.0],
             bias: -1.0,
             input_size: 2,
+            activation: Activation::Linear,
         };
 
 
@@ -108,11 +111,13 @@ mod tests {
             weights: vec![1.0],
             bias: 0.0,
             input_size: 1,
+            activation: Activation::Linear,
         };
         let neuron2 = Neuron {
             weights: vec![1.0, 1.0],
             bias: 0.0,
             input_size: 2,
+            activation: Activation::Linear,
         };
 
         assert!(neuron1.activate(&vec![0.0, 0.0]).is_err());
