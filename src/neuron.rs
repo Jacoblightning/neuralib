@@ -4,6 +4,7 @@ use fastnum::{dec64, D64};
 pub struct Neuron {
     weights: Vec<D64>,
     bias: D64,
+    input_size: usize,
     //output: dyn Fn(D64) -> D64,
 }
 
@@ -12,14 +13,15 @@ impl Neuron {
         Neuron {
             weights: vec![dec64!(0); input_size],
             bias: dec64!(0),
+            input_size,
         }
     }
     
     pub fn activate(&self, inputs: &[D64]) -> crate::error::Result<D64> {
-        if inputs.len() != self.weights.len() {
+        if inputs.len() != self.input_size {
             return Err(crate::error::InputSizeError {
                     inputted: inputs.len(),
-                    expected: self.weights.len(),
+                    expected: self.input_size,
                     chain_depth: "Neuron".to_owned()
                 }.into()
             );
