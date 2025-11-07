@@ -2,6 +2,15 @@
 name = "neuralib"
 version = "0.1.0"
 edition = "2024"
+license = "Apache-2.0 OR MIT"
+repository = "https://github.com/Jacoblightning/neuralib"
+description = "A simple Neural Network Library in Rust"
+resolver = "3"
+exclude = [
+    "TODO.md",
+    ".github",
+    ".gitignore"
+]
 
 [dependencies]
 fastnum = "0.7.3"
