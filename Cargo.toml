@@ -1,5 +1,5 @@
 [package]
-name = "neural_lib_2"
+name = "neuralib"
 version = "0.1.0"
 edition = "2024"
 
