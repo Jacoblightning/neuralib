@@ -7,18 +7,18 @@ pub struct Neuron {
 }
 
 impl Neuron {
-    pub fn new(weights: &[D64], bias: D64) -> Neuron {
+    pub fn new(input_size: usize) -> Neuron {
         Neuron {
-            weights: weights.to_vec(),
-            bias,
+            weights: vec![dec64!(0); input_size],
+            bias: dec64!(0),
         }
     }
     
     pub fn activate(&self, inputs: &[D64]) -> crate::error::Result<D64> {
-        if inputs.len() != self.get_weight_count() {
+        if inputs.len() != self.weights.len() {
             return Err(crate::error::InputSizeError {
                     inputted: inputs.len(),
-                    expected: self.get_weight_count(),
+                    expected: self.weights.len(),
                     chain_depth: "Neuron".to_owned()
                 }.into()
             );
@@ -37,21 +37,6 @@ impl Neuron {
         
         Ok(biased)
     }
-
-
-
-
-    pub fn get_weight(&self, i: usize) -> Option<&D64> {
-        self.weights.get(i)
-    }
-
-    pub fn get_weight_count(&self) -> usize {
-        self.weights.len()
-    }
-    
-    pub fn set_weight(&mut self, i: usize, weight: D64) {
-        self.weights[i] = weight;
-    }
 }
 
 
@@ -61,10 +46,10 @@ mod tests {
 
     #[test]
     fn basic_neuron() {
-        let neuron = Neuron::new(
-            &[dec64!(1)],
-            dec64!(0),
-        );
+        let neuron = Neuron {
+            weights: vec![dec64!(1)],
+            bias: dec64!(0),
+        };
 
 
         assert_eq!(neuron.activate(&vec![dec64!(0)]).unwrap(), dec64!(0));
@@ -77,10 +62,10 @@ mod tests {
 
     #[test]
     fn advanced_neuron() {
-        let neuron = Neuron::new(
-            &[dec64!(2), dec64!(3)],
-            dec64!(-1),
-        );
+        let neuron = Neuron {
+            weights: vec![dec64!(2), dec64!(3)],
+            bias: dec64!(-1),
+        };
 
 
         assert_eq!(neuron.activate(&vec![dec64!(3), dec64!(2)]).unwrap(), dec64!(11));
@@ -92,14 +77,14 @@ mod tests {
 
     #[test]
     fn size_matching() {
-        let neuron1 = Neuron::new(
-            &[dec64!(1)],
-            dec64!(0),
-        );
-        let neuron2 = Neuron::new(
-            &[dec64!(1), dec64!(1)],
-            dec64!(0),
-        );
+        let neuron1 = Neuron {
+            weights: vec![dec64!(1)],
+            bias: dec64!(0),
+        };
+        let neuron2 = Neuron {
+            weights: vec![dec64!(1), dec64!(1)],
+            bias: dec64!(0),
+        };
 
         assert!(neuron1.activate(&vec![dec64!(0), dec64!(0)]).is_err());
         assert!(neuron2.activate(&vec![dec64!(0)]).is_err());
