@@ -1,4 +1,4 @@
-- Re-add weights and biases api
+- ~~Re-add weights and biases api~~
 - Add output/activation function
 - Add defaults
 - Training with gradient descent
