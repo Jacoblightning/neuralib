@@ -1,5 +1,6 @@
 use fastnum::{dec64, D64};
 
+#[derive(Clone)]
 pub struct Neuron {
     weights: Vec<D64>,
     bias: D64,

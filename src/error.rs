@@ -11,6 +11,9 @@ pub struct InputSizeError {
 	pub chain_depth: String,
 }
 
+#[derive(Debug, Clone)]
+pub struct NoLayersError {}
+
 
 impl fmt::Display for InputSizeError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
@@ -18,4 +21,11 @@ impl fmt::Display for InputSizeError {
     }
 }
 
+impl fmt::Display for NoLayersError {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "No layer sizes given.")
+    }
+}
+
 impl error::Error for InputSizeError {}
+impl error::Error for NoLayersError {}
