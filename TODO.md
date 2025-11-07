@@ -2,3 +2,5 @@
 - Add output/activation function
 - Add defaults
 - Training with gradient descent
+- README
+- Weight initalization
