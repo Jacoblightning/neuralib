@@ -3,4 +3,4 @@
 - Add defaults
 - Training with gradient descent
 - README
-- Weight initalization
+- ~~Weight initalization~~
