@@ -1,5 +1,4 @@
 use crate::neuron::Neuron;
-use fastnum::D64;
 
 #[derive(Clone)]
 pub struct Layer {
@@ -15,7 +14,7 @@ impl Layer {
 		}
 	}
 
-	pub fn activate(&self, inputs: &[D64]) -> crate::error::Result<Vec<D64>> {
+	pub fn activate(&self, inputs: &[f64]) -> crate::error::Result<Vec<f64>> {
 		if inputs.len() != self.input_size {
             return Err(crate::error::InputSizeError {
                     inputted: inputs.len(),
