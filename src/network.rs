@@ -2,6 +2,7 @@ use crate::layer::Layer;
 use crate::activation::Activation;
 use crate::training::DataValue;
 
+/// A neural network
 #[derive(Debug)]
 pub struct NeuralNetwork {
 	layers: Vec<Layer>,
@@ -10,6 +11,13 @@ pub struct NeuralNetwork {
 }
 
 impl NeuralNetwork {
+	/// Create a new neural network
+	///
+	/// Arguments:
+	///
+	/// * `layer_sizes` - A slice of usizes containing the size of each layer in the neural network
+	/// * `input_size`  - How many inputs the first layer should accept
+	/// * `activation_functions` - A Vec of which activation function should be in each layer 
 	pub fn new(layer_sizes: &[usize], input_size: usize, activation_functions: Vec<Activation>) -> crate::error::Result<NeuralNetwork> {
 		if layer_sizes.is_empty() {
 			return Err(crate::error::NoLayersError {}.into());
@@ -37,6 +45,11 @@ impl NeuralNetwork {
 		})
 	}
 
+	/// Run the neural network with specific inputs
+	///
+	/// Arguments:
+	///
+	/// * `inputs` - A slice of f64s to be used as input to the network
 	pub fn activate(&self, inputs: &[f64]) -> crate::error::Result<Vec<f64>> {
 		if inputs.len() != self.input_size {
             return Err(crate::error::InputSizeError {
@@ -59,18 +72,24 @@ impl NeuralNetwork {
         Ok(next_in)
 	}
 
+	/// Get the number of layers in this neural network
 	pub fn get_layer_count(&self) -> usize {
 		self.layer_count
 	}
 
-	pub fn get_layer(&self, idx: usize) -> Option<&Layer> {
+	fn get_layer(&self, idx: usize) -> Option<&Layer> {
 		self.layers.get(idx)
 	}
 
-	pub fn get_layer_mut(&mut self, idx: usize) -> Option<&mut Layer> {
+	fn get_layer_mut(&mut self, idx: usize) -> Option<&mut Layer> {
 		self.layers.get_mut(idx)
 	}
 
+	/// Calculate the loss of the network with a DataValue
+	///
+	/// Arguments:
+	///
+	/// * `value` - A reference to a DataValue
 	pub fn loss_with_value(&self, value: &DataValue) -> crate::error::Result<f64> {
 		let output = self.activate(&value.input)?;
 
@@ -83,6 +102,12 @@ impl NeuralNetwork {
 		Ok(loss)
 	}
 
+	/// Calculate the average loss for a slice of DataValues.
+	/// This method should be preferred over `loss_with_value`
+	///
+	/// Arguments:
+	///
+	/// * `values` - A slice of DataValues to test
 	pub fn loss(&self, values: &[DataValue]) -> crate::error::Result<f64> {
 		let mut total_loss = 0.0;
 
@@ -104,7 +129,13 @@ impl NeuralNetwork {
 			}
 		}
 	}
-	
+
+	/// Train the network on some data
+	///
+	/// Arguments:
+	///
+	/// * `training_data` - The data to train the network on in a slice of DataValues
+	/// * `learn_rate` - How fast the network should try to learn
 	pub fn learn(&mut self, training_data: &[DataValue], learn_rate: f64) -> crate::error::Result<()> {
 		let h: f64 = 0.0001;
 		let starting_loss = self.loss(training_data)?;
