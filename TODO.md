@@ -1,6 +1,8 @@
 - ~~Re-add weights and biases api~~
 - ~~Add output/activation function~~
 - Add defaults
-- Training with gradient descent
-- README
+- ~~Simple Training~~
+- README/Docs
 - ~~Weight initalization~~
+- Use centeral differences instead (f(x+h)-f(x-h))/(2h)
+- Do Calculus thingy
