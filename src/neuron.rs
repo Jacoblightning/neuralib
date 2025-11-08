@@ -2,12 +2,19 @@ use rand::prelude::*;
 use rand_distr::StandardNormal;
 use crate::activation::Activation;
 
+#[derive(Debug, Default)]
+pub struct LossGradient {
+    pub loss_gradient_weight: Vec<f64>,
+    pub loss_gradient_bias: f64,
+}
+
 #[derive(Debug)]
 pub struct Neuron {
     weights: Vec<f64>,
     bias: f64,
     input_size: usize,
     activation: Activation,
+    loss_gradient: LossGradient,
 }
 
 impl Neuron {
@@ -21,6 +28,7 @@ impl Neuron {
             bias: 0.0,
             input_size,
             activation,
+            loss_gradient: LossGradient {loss_gradient_weight: vec![0.0; input_size], loss_gradient_bias: 0.0},
         }
     }
     
@@ -49,10 +57,6 @@ impl Neuron {
         Ok(activated)
     }
 
-    pub fn get_weights(&self) -> &[f64] {
-        &self.weights
-    }
-
     pub fn set_weight(&mut self, weight_idx: usize, new_weight: f64) {
         self.weights[weight_idx] = new_weight
     }
@@ -60,9 +64,36 @@ impl Neuron {
     pub fn get_weight(&self, weight_idx: usize) -> Option<&f64> {
         self.weights.get(weight_idx)
     }
+
+    pub fn get_weight_mut(&mut self, weight_idx: usize) -> Option<&mut f64> {
+        self.weights.get_mut(weight_idx)
+    }
+
+    pub fn get_bias(&self) -> &f64 {
+        &self.bias
+    }
     
-    pub fn get_input_length(&self) -> usize {
+    pub fn get_bias_mut(&mut self) -> &mut f64 {
+        &mut self.bias
+    }
+
+    pub fn set_bias(&mut self, new_bias: f64) {
+        self.bias = new_bias;
+    }
+
+    pub fn get_loss_gradient_mut(&mut self) -> &mut LossGradient {
+        &mut self.loss_gradient
+    }
+    
+    pub fn get_weight_count(&self) -> usize {
         self.input_size
+    }
+
+    pub fn apply_gradients(&mut self, learn_rate: f64) {
+        self.bias -= self.loss_gradient.loss_gradient_bias * learn_rate;
+        for idx in 0..self.get_weight_count() {
+            self.weights[idx] -= self.loss_gradient.loss_gradient_weight[idx] * learn_rate;
+        }
     }
 }
 
@@ -78,6 +109,7 @@ mod tests {
             bias: 0.0,
             input_size: 1,
             activation: Activation::Linear,
+            loss_gradient: LossGradient::default(),
         };
 
 
@@ -96,6 +128,7 @@ mod tests {
             bias: -1.0,
             input_size: 2,
             activation: Activation::Linear,
+            loss_gradient: LossGradient::default(),
         };
 
 
@@ -113,12 +146,14 @@ mod tests {
             bias: 0.0,
             input_size: 1,
             activation: Activation::Linear,
+            loss_gradient: LossGradient::default(),
         };
         let neuron2 = Neuron {
             weights: vec![1.0, 1.0],
             bias: 0.0,
             input_size: 2,
             activation: Activation::Linear,
+            loss_gradient: LossGradient::default(),
         };
 
         assert!(neuron1.activate(&vec![0.0, 0.0]).is_err());
