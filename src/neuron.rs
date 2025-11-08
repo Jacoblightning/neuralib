@@ -2,6 +2,7 @@ use rand::prelude::*;
 use rand_distr::StandardNormal;
 use crate::activation::Activation;
 
+#[derive(Debug)]
 pub struct Neuron {
     weights: Vec<f64>,
     bias: f64,

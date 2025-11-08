@@ -4,3 +4,4 @@ mod neuron;
 mod layer;
 pub mod network;
 pub mod activation;
+pub mod training;

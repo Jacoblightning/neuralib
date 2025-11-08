@@ -1,6 +1,7 @@
 use crate::neuron::Neuron;
 use crate::activation::Activation;
 
+#[derive(Debug)]
 pub struct Layer {
 	neurons: Vec<Neuron>,
 	input_size: usize

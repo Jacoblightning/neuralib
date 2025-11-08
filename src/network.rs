@@ -1,6 +1,8 @@
 use crate::layer::Layer;
 use crate::activation::Activation;
+use crate::training::DataValue;
 
+#[derive(Debug)]
 pub struct NeuralNetwork {
 	layers: Vec<Layer>,
 	input_size: usize,
@@ -53,5 +55,29 @@ impl NeuralNetwork {
         }
 
         Ok(next_in)
+	}
+
+	pub fn loss_with_value(&self, value: DataValue) -> crate::error::Result<f64> {
+		let output = self.activate(&value.input)?;
+
+		let mut loss = 0.0;
+
+		for (actual, expected) in output.iter().zip(value.expected_output) {
+			loss += actual - expected
+		}
+
+		Ok(loss)
+	}
+
+	pub fn loss(&self, values: Vec<DataValue>) -> crate::error::Result<f64> {
+		let mut total_loss = 0.0;
+
+		let value_length = values.len();
+
+		for value in values {
+			total_loss += self.loss_with_value(value)?;
+		}
+
+		Ok(total_loss / (value_length as f64))
 	}
 }

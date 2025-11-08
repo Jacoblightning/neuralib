@@ -1,5 +1,6 @@
-#[derive(Clone)]
+#[derive(Clone, Debug, Default)]
 pub enum Activation {
+	#[default]
 	Linear,
 	Step,
 	Sigmoid,
@@ -10,11 +11,6 @@ pub enum Activation {
 	Swish
 }
 
-impl Default for Activation {
-	fn default() -> Activation {
-		Activation::Linear
-	}
-}
 
 impl Activation {
 	pub fn call(&self, x: f64) -> f64 {
