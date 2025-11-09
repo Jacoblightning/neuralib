@@ -44,3 +44,18 @@ impl Layer {
 		self.neurons.get_mut(idx)
 	}
 }
+
+#[cfg(test)]
+mod tests {
+	use super::*;
+
+	#[test]
+	fn layer() {
+		let layer = Layer::new(1, 2, crate::activation::Activation::Linear);
+
+		assert!(layer.activate(&[]).is_err());
+		layer.activate(&[1.0]).unwrap();
+
+		assert_eq!(layer.get_neuron_count(), 2);
+	}
+}

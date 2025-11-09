@@ -6,3 +6,6 @@
 - ~~Weight initalization~~
 - Use centeral differences instead (f(x+h)-f(x-h))/(2h)
 - Do Calculus thingy
+- ~~Tests~~
+- Don't .unwrap anything. Only use expect and only when SURE it is valid.
+- Importing and Exporting

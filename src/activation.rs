@@ -82,18 +82,91 @@ impl Activation {
 mod tests {
     use super::*;
 
+    fn floating_equal(a: f64, b: f64) -> bool {
+    	let tolerance = 0.0001;
+    	(a - b).abs() < tolerance
+    }
+
     #[test]
-    fn test_linear() {
+    fn linear() {
         let act = Activation::Linear;
 
-        for i in 0..=100 {
+        for i in -100..=100 {
         	assert_eq!(act.call(i as f64), i as f64);
         }
     }
 
     #[test]
-    fn test_sigmoid() {
+    fn step() {
+    	// This should be pretty simple to test
+    	let act = Activation::Step;
+
+    	for i in -100..0 {
+    		assert_eq!(act.call(i as f64), 0.0);
+    	}
+
+    	for i in 1..=100 {
+    		assert_eq!(act.call(i as f64), 1.0);
+    	}
+    }
+
+    #[test]
+    fn sigmoid() {
         let act = Activation::Sigmoid;
         assert_eq!(act.call(0.0), 0.5);
+        // Assert that the S shape is there
+        assert!(act.call(9999.0) > 0.999);
+        assert!(act.call(-9999.0) < 0.001);
     }
+
+    #[test]
+    fn hypertan() {
+    	let act = Activation::HyperTan;
+    	assert_eq!(act.call(0.0), 0.0);
+
+    	assert!(act.call(9999.0) > 0.999);
+    	assert!(act.call(-9999.0) < -0.999);
+    }
+
+    
+    #[test]
+    fn si_lu() {
+    	let act = Activation::SiLU;
+    	// This is the low point in the dip.
+    	let si_lu_point = (-1.278465, -0.278465);
+
+
+    	// Test the begining of ReLU
+    	assert!(floating_equal(act.call(-15.0), 0.0));
+    	// Test the end of ReLU
+    	assert!(floating_equal(act.call(100.0), 100.0));
+    	// Test the swish/SiLU point
+    	assert!(floating_equal(act.call(si_lu_point.0), si_lu_point.1));
+    }
+
+    #[test]
+    fn re_lu() {
+    	let act = Activation::ReLU;
+
+    	for i in -100..=0 {
+    		assert_eq!(act.call(i as f64), 0.0);
+    	}
+    	for i in 0..=100 {
+    		assert_eq!(act.call(i as f64), i as f64);
+    	}
+    }
+
+    #[test]
+    fn leaky_re_lu() {
+    	let act = Activation::LeakyReLU;
+
+    	for i in -100..=0 {
+    		assert_eq!(act.call(i as f64), (i as f64) * 0.15);
+    	}
+    	for i in 0..=100 {
+    		assert_eq!(act.call(i as f64), i as f64);
+    	}
+    }
+
+    // Swish just calls SiLU and so doesn't need it's own test
 }

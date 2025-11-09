@@ -57,8 +57,29 @@ impl Neuron {
         Ok(activated)
     }
 
+    pub fn set_weight(&mut self, weight_idx: usize, new_weight: &f64) -> Result<(), ()> {
+        if let Some(weight) = self.get_weight_mut(weight_idx) {
+            weight.clone_from(new_weight);
+            Ok(())
+        } else {
+            Err(())
+        }
+    }
+
+    pub fn get_weight(&self, weight_idx: usize) -> Option<&f64> {
+        self.weights.get(weight_idx)
+    }
+
     pub fn get_weight_mut(&mut self, weight_idx: usize) -> Option<&mut f64> {
         self.weights.get_mut(weight_idx)
+    }
+
+    pub fn set_bias(&mut self, new_bias: &f64) {
+        self.get_bias_mut().clone_from(new_bias)
+    }
+
+    pub fn get_bias(&self) -> &f64 {
+        &self.bias
     }
     
     pub fn get_bias_mut(&mut self) -> &mut f64 {
@@ -145,5 +166,31 @@ mod tests {
 
         assert!(neuron1.activate(&vec![0.0]).is_ok());
         assert!(neuron2.activate(&vec![0.0, 0.0]).is_ok());
+    }
+
+    #[test]
+    fn methods() {
+        // Test for new method
+        let mut neuron = Neuron::new(2, Activation::Sigmoid);
+
+        for i in -100..=100 {
+            // Bias stuff
+            neuron.set_bias(&(i as f64));
+            assert_eq!(*neuron.get_bias(), i as f64);
+            let nonmut = *neuron.get_bias();
+            let mutt = *neuron.get_bias_mut();
+            assert_eq!(nonmut, mutt);
+
+            // Weight stuff
+            for weightidx in 0..neuron.get_weight_count() {
+                neuron.set_weight(weightidx, &(i as f64)).unwrap();
+                assert_eq!(*neuron.get_weight(weightidx).unwrap(), i as f64);
+                let nonmut = *neuron.get_weight(weightidx).unwrap();
+                let mutt = *neuron.get_weight_mut(weightidx).as_deref().unwrap();
+                assert_eq!(nonmut, mutt);
+            }
+        }
+
+        assert!(neuron.set_weight(neuron.get_weight_count(), &0.0).is_err());
     }
 }

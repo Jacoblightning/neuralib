@@ -189,3 +189,26 @@ impl NeuralNetwork {
 	    Ok(())
 	}
 }
+
+#[cfg(test)]
+mod tests {
+	use super::*;
+	
+	#[test]
+	fn methods() {
+		let network = NeuralNetwork::new(&[2, 2], 2, vec![Activation::Sigmoid, Activation::Step]).unwrap();
+
+		network.activate(&[0.0, 0.0]).unwrap();
+
+		assert_eq!(network.get_layer_count(), 2);
+	}
+
+	#[test]
+	fn errors() {
+		assert!(NeuralNetwork::new(&[], 0, vec![]).is_err());
+		assert!(NeuralNetwork::new(&[1], 0, vec![]).is_err());
+
+		let network = NeuralNetwork::new(&[1], 1, vec![Activation::Linear]).unwrap();
+		assert!(network.activate(&[]).is_err());
+	}
+}
