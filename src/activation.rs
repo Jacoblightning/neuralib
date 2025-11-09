@@ -42,30 +42,78 @@ impl Activation {
 		}
 	}
 
+	pub fn derivative(&self, x: f64) -> f64 {
+        match self {
+			Activation::Linear    => Activation::deriv_linear(x),
+			Activation::Step      => Activation::deriv_step(x),
+			Activation::Sigmoid   => Activation::deriv_sigmoid(x),
+			Activation::HyperTan  => Activation::deriv_hypertan(x),
+			Activation::SiLU      => Activation::deriv_si_lu(x),
+			Activation::ReLU      => Activation::deriv_re_lu(x),
+			Activation::LeakyReLU => Activation::deriv_leaky_re_lu(x),
+			#[allow(deprecated)]
+			Activation::Swish     => Activation::deriv_si_lu(x),
+		}
+	}
+
+	fn deriv_linear(_x: f64) -> f64 {
+	    1.0
+	}
+
 
 	fn linear(x: f64) -> f64 {
 		x
+	}
+
+	fn deriv_step(_x: f64) -> f64 {
+	    // Almost always 0
+	    0.0
 	}
 	
 	fn step(x: f64) -> f64 {
 		if x>0.0 {1.0} else {0.0}
 	}
+
+	fn deriv_sigmoid(x: f64) -> f64 {
+	    let a = Activation::sigmoid(x);
+	    a * (1.0 - a)
+	}
 	
 	fn sigmoid(x: f64) -> f64 {
 		(1.0 + (-x).exp()).recip()
 	}
+
+	fn deriv_hypertan(x: f64) -> f64 {
+	    1.0 - x.tanh().powi(2)
+	}
 	
 	fn hypertan(x: f64) -> f64 {
 		x.tanh()
+	}
+
+	fn deriv_si_lu(x: f64) -> f64 {
+	    // This calculates x * Activation::deriv_sigmoid(x) + Activation::sigmoid(x) but only calculates the sigmoid once
+	    let sigm = Activation::sigmoid(x);
+	    // Use mul_add to reduce error
+	    x.mul_add(sigm * (1.0 - sigm), sigm)
 	}
 	
 	fn si_lu(x: f64) -> f64 {
 		let beta = 1.0;
 		x * Activation::sigmoid(beta * x)
 	}
+
+	fn deriv_re_lu(x: f64) -> f64 {
+	    // I have chosen to make the derivative at 0 be 1.0 so I can do this for both ReLU and Leaky ReLU
+	    if x < 0.0 {0.0} else {1.0}
+	}
 	
 	fn re_lu(x: f64) -> f64 {
 		x.max(0.0)
+	}
+
+	fn deriv_leaky_re_lu(x: f64) -> f64 {
+	    if x < 0.0 {0.15} else {1.0}
 	}
 
 	fn leaky_re_lu(x: f64) -> f64 {
