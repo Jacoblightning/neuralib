@@ -57,28 +57,12 @@ impl Neuron {
         Ok(activated)
     }
 
-    pub fn set_weight(&mut self, weight_idx: usize, new_weight: f64) {
-        self.weights[weight_idx] = new_weight
-    }
-    
-    pub fn get_weight(&self, weight_idx: usize) -> Option<&f64> {
-        self.weights.get(weight_idx)
-    }
-
     pub fn get_weight_mut(&mut self, weight_idx: usize) -> Option<&mut f64> {
         self.weights.get_mut(weight_idx)
-    }
-
-    pub fn get_bias(&self) -> &f64 {
-        &self.bias
     }
     
     pub fn get_bias_mut(&mut self) -> &mut f64 {
         &mut self.bias
-    }
-
-    pub fn set_bias(&mut self, new_bias: f64) {
-        self.bias = new_bias;
     }
 
     pub fn get_loss_gradient_mut(&mut self) -> &mut LossGradient {
