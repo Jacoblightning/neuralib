@@ -7,4 +7,6 @@
 - ~~Implement backpropagation~~
 - ~~Tests~~
 - Don't .unwrap anything. Only use expect and only when SURE it is valid.
-- Importing and Exporting
+- Importing and Exporting (serde)
+- Progress bar feature
+- IDX file support via a feature
