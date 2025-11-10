@@ -1,4 +1,5 @@
 use crate::layer::Layer;
+use crate::neuron::Neuron;
 use crate::activation::Activation;
 use crate::training::DataValue;
 
@@ -50,7 +51,7 @@ impl NeuralNetwork {
 	/// Arguments:
 	///
 	/// * `inputs` - A slice of f64s to be used as input to the network
-	pub fn activate(&self, inputs: &[f64]) -> crate::error::Result<Vec<f64>> {
+	pub fn activate(&mut self, inputs: &[f64]) -> crate::error::Result<Vec<f64>> {
 		if inputs.len() != self.input_size {
             return Err(crate::error::InputSizeError {
                     inputted: inputs.len(),
@@ -64,7 +65,7 @@ impl NeuralNetwork {
 
         let mut next_in = inputs.to_vec();
 
-        for layer in &self.layers {
+        for layer in &mut self.layers {
         	// All the sizes *should* be correct
         	next_in = layer.activate(&next_in).expect("Length was already checked. This should not fail. (Network)")
         }
@@ -90,13 +91,13 @@ impl NeuralNetwork {
 	/// Arguments:
 	///
 	/// * `value` - A reference to a DataValue
-	pub fn loss_with_value(&self, value: &DataValue) -> crate::error::Result<f64> {
+	pub fn loss_with_value(&mut self, value: &DataValue) -> crate::error::Result<f64> {
 		let output = self.activate(&value.input)?;
 
 		let mut loss = 0.0;
 
 		for (actual, expected) in output.iter().zip(value.expected_output.iter()) {
-			loss += (actual - expected).powi(2);
+			loss += Neuron::loss(actual, expected);
 		}
 
 		Ok(loss)
@@ -108,7 +109,7 @@ impl NeuralNetwork {
 	/// Arguments:
 	///
 	/// * `values` - A slice of DataValues to test
-	pub fn loss(&self, values: &[DataValue]) -> crate::error::Result<f64> {
+	pub fn loss(&mut self, values: &[DataValue]) -> crate::error::Result<f64> {
 		let mut total_loss = 0.0;
 
 		let value_length = values.len();
@@ -136,6 +137,32 @@ impl NeuralNetwork {
 	///
 	/// * `training_data` - The data to train the network on in a slice of DataValues
 	/// * `learn_rate` - How fast the network should try to learn
+	pub fn learn(&mut self, training_data: &[DataValue], learn_rate: f64) {
+		for value in training_data {
+			self.update_all_gradients(value);
+		}
+
+		self.apply_gradients(learn_rate / (training_data.len() as f64));
+	}
+
+	fn update_all_gradients(&mut self, value: &DataValue) {
+		// Prep the network
+		self.activate(&value.input).expect("Length was already checked. This should not fail. (Network)");
+
+		let output_layer = self.get_layer_mut(self.get_layer_count() - 1).expect("Length was already checked. This should not fail. (Network)");
+		output_layer.update_gradients_output(&value.expected_output);
+		
+		for layeridx in (0..self.get_layer_count()).rev().skip(1) {
+			// Fun borrow checker shenanigans
+			let (up_to_current, past_current) = self.layers.split_at_mut_checked(layeridx+1).expect("Length was already checked. This should not fail. (Network)");
+			let current_layer = up_to_current.get_mut(layeridx).expect("Length was already checked. This should not fail. (Network)");
+			let next_layer = past_current.first().expect("Length was already checked. This should not fail. (Network)");
+			current_layer.update_gradients_hidden(next_layer);
+		}
+	}
+
+	// Old learning function
+	/*
 	pub fn learn(&mut self, training_data: &[DataValue], learn_rate: f64) -> crate::error::Result<()> {
 		let h: f64 = 0.0001;
 		let starting_loss = self.loss(training_data)?;
@@ -188,6 +215,7 @@ impl NeuralNetwork {
 
 	    Ok(())
 	}
+	*/
 }
 
 #[cfg(test)]
@@ -196,7 +224,7 @@ mod tests {
 	
 	#[test]
 	fn methods() {
-		let network = NeuralNetwork::new(&[2, 2], 2, vec![Activation::Sigmoid, Activation::Step]).unwrap();
+		let mut network = NeuralNetwork::new(&[2, 2], 2, vec![Activation::Sigmoid, Activation::Step]).unwrap();
 
 		network.activate(&[0.0, 0.0]).unwrap();
 
@@ -208,7 +236,7 @@ mod tests {
 		assert!(NeuralNetwork::new(&[], 0, vec![]).is_err());
 		assert!(NeuralNetwork::new(&[1], 0, vec![]).is_err());
 
-		let network = NeuralNetwork::new(&[1], 1, vec![Activation::Linear]).unwrap();
+		let mut network = NeuralNetwork::new(&[1], 1, vec![Activation::Linear]).unwrap();
 		assert!(network.activate(&[]).is_err());
 	}
 }

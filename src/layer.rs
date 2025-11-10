@@ -17,7 +17,7 @@ impl Layer {
 		}
 	}
 
-	pub fn activate(&self, inputs: &[f64]) -> crate::error::Result<Vec<f64>> {
+	pub fn activate(&mut self, inputs: &[f64]) -> crate::error::Result<Vec<f64>> {
 		if inputs.len() != self.input_size {
             return Err(crate::error::InputSizeError {
                     inputted: inputs.len(),
@@ -27,9 +27,23 @@ impl Layer {
             );
         }
 
-        Ok(self.neurons.iter()
+        Ok(self.neurons.iter_mut()
         	.map(|neuron| neuron.activate(inputs).expect("Length was already checked. This should not fail. (Layer)"))
         	.collect())
+	}
+
+	pub fn update_gradients_output(&mut self, expected_outputs: &[f64]) {
+		for (neuron, output) in self.neurons.iter_mut().zip(expected_outputs) {
+			neuron.calculate_deriv_output(output);
+			neuron.update_gradients();
+		}
+	}
+
+	pub fn update_gradients_hidden(&mut self, next_layer: &Layer) {
+		for (neuronidx, neuron) in self.neurons.iter_mut().enumerate() {
+			neuron.calculate_deriv_hidden(next_layer, neuronidx);
+			neuron.update_gradients();
+		}
 	}
 
 	pub fn get_neuron_count(&self) -> usize {
@@ -51,7 +65,7 @@ mod tests {
 
 	#[test]
 	fn layer() {
-		let layer = Layer::new(1, 2, crate::activation::Activation::Linear);
+		let mut layer = Layer::new(1, 2, crate::activation::Activation::Linear);
 
 		assert!(layer.activate(&[]).is_err());
 		layer.activate(&[1.0]).unwrap();
