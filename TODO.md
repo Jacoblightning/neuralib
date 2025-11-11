@@ -9,4 +9,5 @@
 - Don't .unwrap anything. Only use expect and only when SURE it is valid.
 - Importing and Exporting (serde)
 - Progress bar feature
-- IDX file support via a feature
+- ~~IDX file support via a feature~~
+- Support for random subset of training data (feature)
