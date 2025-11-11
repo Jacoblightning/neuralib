@@ -1,7 +1,10 @@
 use crate::neuron::Neuron;
 use crate::activation::Activation;
 
-#[derive(Debug)]
+#[cfg(feature = "serde")]
+use serde::{Serialize, Deserialize};
+
+#[derive(Debug, Serialize, Deserialize)]
 pub struct Layer {
 	neurons: Vec<Neuron>,
 	neuron_count: usize,

@@ -3,6 +3,9 @@ use rand_distr::StandardNormal;
 use crate::activation::Activation;
 use crate::layer::Layer;
 
+#[cfg(feature = "serde")]
+use serde::{Serialize, Deserialize};
+
 #[derive(Debug, Default)]
 pub struct LossGradient {
     pub loss_gradient_weight: Vec<f64>,
@@ -17,14 +20,16 @@ struct DataCache {
     last_deriv: f64,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct Neuron {
     weights: Vec<f64>,
     bias: f64,
     input_size: usize,
     activation: Activation,
+    #[serde(skip)]
     loss_gradient: LossGradient,
     // Needed for training
+    #[serde(skip)]
     cache: DataCache,
 }
 

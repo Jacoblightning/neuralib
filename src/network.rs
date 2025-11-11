@@ -3,8 +3,14 @@ use crate::neuron::Neuron;
 use crate::activation::Activation;
 use crate::training::DataValue;
 
+#[cfg(feature = "serde")]
+use {
+	serde::{Serialize, Deserialize},
+	rmp_serde::{Deserializer, Serializer},
+};
+
 /// A neural network
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct NeuralNetwork {
 	layers: Vec<Layer>,
 	layer_count: usize,
@@ -170,6 +176,24 @@ impl NeuralNetwork {
 			let next_layer = past_current.first().expect("Length was already checked. This should not fail. (Network)");
 			current_layer.update_gradients_hidden(next_layer);
 		}
+	}
+
+	#[cfg(feature = "serde")]
+	pub fn save(&self, file: &mut impl std::io::Write) -> std::io::Result<()> {
+		let mut buf = Vec::new();
+		self.serialize(&mut Serializer::new(&mut buf)).unwrap();
+
+		file.write_all(&buf)
+	}
+
+	#[cfg(feature = "serde")]
+	pub fn from_saved(file: impl std::io::Read) -> Result<Self, rmp_serde::decode::Error> {
+		//let mut buf = Vec::new();
+	
+		//file.read_to_end(&mut buf).unwrap();
+
+		//Self::deserialize(&mut Deserializer::new(&buf[..]))
+		Self::deserialize(&mut Deserializer::new(file))
 	}
 }
 

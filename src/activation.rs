@@ -2,8 +2,11 @@
 //!
 //! This module provides many different activation functions for a neural network.
 
+#[cfg(feature = "serde")]
+use serde::{Serialize, Deserialize};
+
 /// The activation functions this library supports
-#[derive(Clone, Debug, Default)]
+#[derive(Clone, Debug, Default, Serialize, Deserialize)]
 pub enum Activation {
 	/// A linear activation function. The output is the same as the input
 	#[default]

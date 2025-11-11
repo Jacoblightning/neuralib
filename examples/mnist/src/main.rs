@@ -26,11 +26,17 @@ fn main() {
         bar.inc(1);
         network.learn_randomly(&data, 0.5, epoch_size);
         if epoch % 100 == 0 {
-            println!("Epoch: {epoch}. Loss: {}", network.loss(&test_data).unwrap());
+            network.save(&mut File::create(format!("save-epoch-{epoch}.mp")).unwrap()).unwrap();
+            println!("Epoch: {epoch}. (Saved). Loss: {}", network.loss(&test_data).unwrap());
+        } else if epoch % 20 == 0 {
+            network.save(&mut File::create(format!("save-epoch-{epoch}.mp")).unwrap()).unwrap();
+            println!("Epoch: {epoch}. (Saved)");
         } else {
             println!("Epoch: {epoch}.");
         }
     }
 
-    println!("{network:#?}");
+    network.save(&mut File::create("final.mp").unwrap()).unwrap();
+
+    //println!("{network:#?}");
 }
