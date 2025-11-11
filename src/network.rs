@@ -145,6 +145,17 @@ impl NeuralNetwork {
 		self.apply_gradients(learn_rate / (training_data.len() as f64));
 	}
 
+
+	pub fn learn_randomly(&mut self, training_data: &[DataValue], learn_rate: f64, amount: usize) {
+		use rand::seq::SliceRandom;
+		let mut rand_split = training_data.to_vec();
+
+		// Shuffle the data
+		rand_split.shuffle(&mut rand::rng());
+		// Get the split
+		self.learn(&rand_split[..amount], learn_rate)
+	}
+
 	fn update_all_gradients(&mut self, value: &DataValue) {
 		// Prep the network
 		self.activate(&value.input).expect("Length was already checked. This should not fail. (Network)");

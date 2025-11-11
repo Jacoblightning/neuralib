@@ -1,5 +1,5 @@
 /// A struct to store data for the neural network
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct DataValue {
 	/// The input value for the neural network
 	pub input: Vec<f64>,
