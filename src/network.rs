@@ -171,62 +171,6 @@ impl NeuralNetwork {
 			current_layer.update_gradients_hidden(next_layer);
 		}
 	}
-
-	// Old learning function
-	/*
-	pub fn learn(&mut self, training_data: &[DataValue], learn_rate: f64) -> crate::error::Result<()> {
-		let h: f64 = 0.0001;
-		let starting_loss = self.loss(training_data)?;
-
-
-		// This is made WAY more complicated by the borrow checker
-	    for layeridx in 0..self.get_layer_count() {
-			let neuron_count = self.get_layer(layeridx).unwrap().get_neuron_count();
-			for neuronidx in 0..neuron_count {
-				// Modify the weights for the neuron
-				let weight_count = self.get_layer(layeridx).unwrap().get_neuron(neuronidx).unwrap().get_weight_count();
-				for weightidx in 0..weight_count {
-					// Set the weight in a seperate scope
-					{
-						let weight = self.get_layer_mut(layeridx).unwrap().get_neuron_mut(neuronidx).unwrap().get_weight_mut(weightidx).unwrap();
-						*weight += h;
-					}
-					// Calculate the delta loss after dropping the mutable reference
-					let delta_loss = self.loss(training_data)? - starting_loss;
-					// Revert the weight (in a seperate scope) and save the data
-					{
-						let neuron = self.get_layer_mut(layeridx).unwrap().get_neuron_mut(neuronidx).unwrap();
-						let weight = neuron.get_weight_mut(weightidx).unwrap();
-						*weight -= h;
-						let loss_grad = neuron.get_loss_gradient_mut();
-						loss_grad.loss_gradient_weight[weightidx] = delta_loss / h;
-					}
-				}
-				// Now modify the bias for the neuron
-				{
-					let bias = self.get_layer_mut(layeridx).unwrap().get_neuron_mut(neuronidx).unwrap().get_bias_mut();
-					*bias += h;
-				}
-				// Calculate the delta loss after dropping the mutable reference
-				let delta_loss = self.loss(training_data)? - starting_loss;
-				// Revert the bias (in a seperate scope) and save the data
-				{
-					let neuron = self.get_layer_mut(layeridx).unwrap().get_neuron_mut(neuronidx).unwrap();
-					let bias = neuron.get_bias_mut();
-					*bias -= h;
-					let loss_grad = neuron.get_loss_gradient_mut();
-					loss_grad.loss_gradient_bias = delta_loss / h;
-				}
-	        }
-	    }
-
-	    // Now apply all of the gradients...
-
-	    self.apply_gradients(learn_rate);
-
-	    Ok(())
-	}
-	*/
 }
 
 #[cfg(test)]
