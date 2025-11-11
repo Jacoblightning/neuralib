@@ -14,7 +14,7 @@ impl DataValue {
 	/// Expectations:
 	///		The data is stored as vec of the MSI (Most significant index) in the idx. The rest will be flattened
 	/// 	The flattened label vec will have the same length as the data one.
-	pub fn from_data_label_idx(input_idx: &mut (impl std::io::Read + std::io::Seek), label_idx: &mut (impl std::io::Read + std::io::Seek)) -> crate::error::Result<()> {
+	pub fn from_data_label_idx(input_idx: &mut (impl std::io::Read + std::io::Seek), label_idx: &mut (impl std::io::Read + std::io::Seek)) -> crate::error::Result<Vec<DataValue>> {
 		use idx_lib::*;
 
 		// Fun chained iterator shenanigans
@@ -55,7 +55,7 @@ impl DataValue {
 
 		//let data_parsed = data_parsed[0].flatten();
 
-		println!("{data_parsed:#?}");
-		Ok(())
+		//println!("{data_parsed:#?}");
+		Ok(data_parsed)
 	}
 }
