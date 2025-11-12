@@ -80,6 +80,7 @@ impl Neuron {
         Ok(activated)
     }
 
+    #[allow(dead_code)]
     pub fn set_weight(&mut self, weight_idx: usize, new_weight: &f64) -> Result<(), ()> {
         if let Some(weight) = self.get_weight_mut(weight_idx) {
             weight.clone_from(new_weight);
@@ -121,6 +122,7 @@ impl Neuron {
         //deriv
     }
 
+    #[allow(dead_code)]
     pub fn get_weight(&self, weight_idx: usize) -> Option<&f64> {
         self.weights.get(weight_idx)
     }
@@ -129,10 +131,12 @@ impl Neuron {
         self.weights.get_mut(weight_idx)
     }
 
+    #[allow(dead_code)]
     pub fn set_bias(&mut self, new_bias: &f64) {
         self.get_bias_mut().clone_from(new_bias)
     }
 
+    #[allow(dead_code)]
     pub fn get_bias(&self) -> &f64 {
         &self.bias
     }
@@ -141,6 +145,7 @@ impl Neuron {
         &mut self.bias
     }
 
+    #[allow(dead_code)]
     pub fn get_loss_gradient_mut(&mut self) -> &mut LossGradient {
         &mut self.loss_gradient
     }

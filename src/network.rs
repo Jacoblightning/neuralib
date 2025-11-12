@@ -84,6 +84,7 @@ impl NeuralNetwork {
 		self.layer_count
 	}
 
+	#[allow(dead_code)]
 	fn get_layer(&self, idx: usize) -> Option<&Layer> {
 		self.layers.get(idx)
 	}
