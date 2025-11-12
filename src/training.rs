@@ -14,7 +14,12 @@ impl DataValue {
 	/// Expectations:
 	///		The data is stored as vec of the MSI (Most significant index) in the idx. The rest will be flattened
 	/// 	The flattened label vec will have the same length as the data one.
-	pub fn from_data_label_idx(input_idx: &mut (impl std::io::Read + std::io::Seek), label_idx: &mut (impl std::io::Read + std::io::Seek)) -> crate::error::Result<Vec<DataValue>> {
+	///
+	/// Arguments:
+	///	* `input_idx` - The IDX file for the input data
+	///	* `label_idx` - The IDX file for the labels
+	/// * `normalize` - An optional f64 to normalize the values by
+	pub fn from_data_label_idx(input_idx: &mut (impl std::io::Read + std::io::Seek), label_idx: &mut (impl std::io::Read + std::io::Seek), normalize: Option<f64>) -> crate::error::Result<Vec<DataValue>> {
 		use idx_lib::*;
 
 		// Fun chained iterator shenanigans
@@ -39,7 +44,10 @@ impl DataValue {
 			// Flatten each of them (to prep them to be inputs) and convert to a Vec
 			.map(|x| x.flatten().to_vec())
 			// Convert to f64s
-			.map(|x: Vec<_>| x.iter().map(|y| y.cast_as::<f64>().unwrap()).collect::<Vec<_>>())
+			.map(|x: Vec<_>| x.iter().map(|y| y.cast_as::<f64>().unwrap() / match normalize {
+				None => 1.0,
+				Some(val) => val
+			}).collect::<Vec<_>>())
 			// Combine them with the labels
 			.zip(labels.iter())
 			// Convert to DataValues

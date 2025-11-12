@@ -11,15 +11,15 @@ fn main() {
     let mut test_input = BufReader::new(File::open("src/t10k-images-idx3-ubyte").unwrap());
     let mut test_labels = BufReader::new(File::open("src/t10k-labels-idx1-ubyte").unwrap());
     
-    let data: Vec<DataValue> = DataValue::from_data_label_idx(&mut input_idx, &mut labels_idx).unwrap();
-    let test_data: Vec<DataValue> = DataValue::from_data_label_idx(&mut test_input, &mut test_labels).unwrap();
+    let data: Vec<DataValue> = DataValue::from_data_label_idx(&mut input_idx, &mut labels_idx, None).unwrap();
+    let test_data: Vec<DataValue> = DataValue::from_data_label_idx(&mut test_input, &mut test_labels, None).unwrap();
 
     // Network with 784 inputs, 100 hidden, and 10 outputs. Both the hidden layer and the output have sigmoid activation
     let mut network = NeuralNetwork::new(&[100, 10], 784, vec![Activation::Sigmoid, Activation::Sigmoid]).unwrap();
 
     let bar = ProgressBar::new(epochs);
 
-    let epoch_size = data.len() / 10;
+    let epoch_size = data.len() / 5;
 
     println!("Learning... (Epoch size: {epoch_size})");
     for epoch in 1..=epochs {
