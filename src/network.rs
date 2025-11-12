@@ -144,16 +144,18 @@ impl NeuralNetwork {
 	///
 	/// * `training_data` - The data to train the network on in a slice of DataValues
 	/// * `learn_rate` - How fast the network should try to learn
-	pub fn learn(&mut self, training_data: &[DataValue], learn_rate: f64) {
+	pub fn learn(&mut self, training_data: &[DataValue], learn_rate: f64) -> crate::error::Result<()> {
 		for value in training_data {
-			self.update_all_gradients(value);
+			self.update_all_gradients(value)?;
 		}
 
 		self.apply_gradients(learn_rate / (training_data.len() as f64));
+
+		Ok(())
 	}
 
 
-	pub fn learn_randomly(&mut self, training_data: &[DataValue], learn_rate: f64, amount: usize) {
+	pub fn learn_randomly(&mut self, training_data: &[DataValue], learn_rate: f64, amount: usize) -> crate::error::Result<()> {
 		use rand::seq::SliceRandom;
 		let mut rand_split = training_data.to_vec();
 
@@ -163,9 +165,9 @@ impl NeuralNetwork {
 		self.learn(&rand_split[..amount], learn_rate)
 	}
 
-	fn update_all_gradients(&mut self, value: &DataValue) {
+	fn update_all_gradients(&mut self, value: &DataValue) -> crate::error::Result<()> {
 		// Prep the network
-		self.activate(&value.input).expect("Length was already checked. This should not fail. (Network)");
+		self.activate(&value.input)?;
 
 		let output_layer = self.get_layer_mut(self.get_layer_count() - 1).expect("Length was already checked. This should not fail. (Network)");
 		output_layer.update_gradients_output(&value.expected_output);
@@ -177,6 +179,8 @@ impl NeuralNetwork {
 			let next_layer = past_current.first().expect("Length was already checked. This should not fail. (Network)");
 			current_layer.update_gradients_hidden(next_layer);
 		}
+
+		Ok(())
 	}
 
 	#[cfg(feature = "serde")]
