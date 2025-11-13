@@ -11,3 +11,4 @@
 - Progress bar feature
 - ~~IDX file support via a feature~~
 - ~~Support for random subset of training data~~
+- Support training after loading a saved model
