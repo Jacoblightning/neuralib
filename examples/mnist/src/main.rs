@@ -24,7 +24,7 @@ fn main() {
     println!("Learning... (Epoch size: {epoch_size})");
     for epoch in 1..=epochs {
         bar.inc(1);
-        network.learn_randomly(&data, 0.5, epoch_size);
+        network.learn_randomly(&data, 0.5, epoch_size).unwrap();
         if epoch % 100 == 0 {
             network.save(&mut File::create(format!("save-epoch-{epoch}.mp")).unwrap()).unwrap();
             println!("Epoch: {epoch}. (Saved). Loss: {}", network.loss(&test_data).unwrap());
