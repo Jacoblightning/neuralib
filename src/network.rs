@@ -15,6 +15,7 @@ pub struct NeuralNetwork {
 	layers: Vec<Layer>,
 	layer_count: usize,
 	input_size: usize,
+	output_size: usize,
 }
 
 impl NeuralNetwork {
@@ -38,17 +39,20 @@ impl NeuralNetwork {
 		// Allocate a vector for the layers
 		let mut layers: Vec<Layer> = Vec::with_capacity(layer_sizes.len());
 
-
+		let mut output_size = 0;
+		
 		let mut previous_size = &input_size;
 		for (layer_size, activator) in layer_sizes.iter().zip(activation_functions) {
 			layers.push(Layer::new(*previous_size, *layer_size, activator));
 			previous_size = layer_size;
+			output_size = *layer_size;
 		}
 
 		Ok(NeuralNetwork {
 			layer_count: layers.len(),
 			layers,
 			input_size,
+			output_size,
 		})
 	}
 
@@ -99,6 +103,15 @@ impl NeuralNetwork {
 	///
 	/// * `value` - A reference to a DataValue
 	pub fn loss_with_value(&mut self, value: &DataValue) -> crate::error::Result<f64> {
+		if value.expected_output.len() != self.output_size {
+			return Err(crate::error::InputSizeError {
+			        inputted: value.expected_output.len(),
+			        expected: self.output_size,
+			        chain_depth: "NeuralNetwork".to_owned()
+			    }.into()
+			);
+		}
+		
 		let output = self.activate(&value.input)?;
 
 		let mut loss = 0.0;
@@ -166,6 +179,15 @@ impl NeuralNetwork {
 	}
 
 	fn update_all_gradients(&mut self, value: &DataValue) -> crate::error::Result<()> {
+		if value.expected_output.len() != self.output_size {
+			return Err(crate::error::InputSizeError {
+			        inputted: value.expected_output.len(),
+			        expected: self.output_size,
+			        chain_depth: "NeuralNetwork".to_owned()
+			    }.into()
+			);
+		}
+
 		// Prep the network
 		self.activate(&value.input)?;
 
