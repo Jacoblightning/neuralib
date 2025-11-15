@@ -19,7 +19,7 @@ fn main() {
 
     let bar = ProgressBar::new(epochs);
 
-    let epoch_size = data.len() / 5;
+    let epoch_size = data.len() / 10;
 
     println!("Learning... (Epoch size: {epoch_size})");
     for epoch in 1..=epochs {
