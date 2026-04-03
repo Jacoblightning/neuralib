@@ -12,3 +12,5 @@
 - ~~IDX file support via a feature~~
 - ~~Support for random subset of training data~~
 - Support training after loading a saved model
+- Consider making creation easier by giving a slice of (layer_neurons, activation function) to the cration function
+- Move input_neurons into the layer_neurons arg
