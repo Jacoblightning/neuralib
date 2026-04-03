@@ -1,9 +1,15 @@
-[package]
-name = "neuralib"
+[workspace]
+members = ["neuralib-python-cffi"]
+
+[workspace.package]
 version = "0.0.2"
 edition = "2024"
 license = "Apache-2.0 OR MIT"
 repository = "https://github.com/Jacoblightning/neuralib"
+
+
+[package]
+name = "neuralib"
 description = "A simple Neural Network Library in Rust"
 resolver = "3"
 exclude = [
@@ -11,6 +17,12 @@ exclude = [
     ".github",
     ".gitignore"
 ]
+
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+
 
 [dependencies]
 idx-lib = { version = "0.0.2", optional = true }

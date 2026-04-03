@@ -14,3 +14,5 @@
 - Support training after loading a saved model
 - Consider making creation easier by giving a slice of (layer_neurons, activation function) to the cration function
 - Move input_neurons into the layer_neurons arg
+- If possible, move python library into main library and make available with a feature
+- Remove swish

@@ -1,0 +1,95 @@
+use pyo3::prelude::*;
+use pyo3::exceptions::PyValueError;
+
+
+// Converting Box<dyn std::error::Error> into a PyErr
+struct ErrorMessage {
+    message: String
+}
+
+impl From<Box<dyn std::error::Error>> for ErrorMessage {
+    fn from(error: Box<dyn std::error::Error>) -> Self {
+        Self { message: error.to_string() }
+    }
+}
+
+impl From<ErrorMessage> for PyErr {
+    fn from(error: ErrorMessage) -> Self {
+        PyValueError::new_err(error.message)
+    }
+}
+
+type PyAnyResult<T> = std::result::Result<T, ErrorMessage>;
+
+/// A Python module implemented in Rust.
+#[pymodule]
+mod neuralib_rs_cffi {
+    use pyo3::prelude::*;
+
+    /// Network module CFFI
+    #[pymodule]
+    mod network {
+        use pyo3::prelude::*;
+
+        #[pyclass]
+        struct NeuralNetwork {
+            inner_network: neuralib::network::NeuralNetwork
+        }
+
+        // pub fn new(layer_sizes: &[usize], input_size: usize, activation_functions: Vec<Activation>) -> crate::error::Result<NeuralNetwork> {
+
+        #[pymethods]
+        impl NeuralNetwork {
+            #[new]
+            fn __new__(layer_sizes: Vec<usize>, input_size: usize, activation_functions: Vec<super::activation::Activation>) -> crate::PyAnyResult<Self> {
+                Ok(NeuralNetwork { inner_network: neuralib::network::NeuralNetwork::new(&layer_sizes, input_size, activation_functions.into_iter().map(|func| func.into()).collect())? })
+            }
+        }
+
+        //#[pyfunction]
+
+    }
+
+    #[pymodule]
+    mod activation {
+        use pyo3::prelude::*;
+
+        #[pyclass]
+        #[derive(Clone)]
+        pub enum Activation {
+            /// A linear activation function. The output is the same as the input
+            Linear,
+            /// The step activation function. The output is 0 if x<0 otherwise, it's 1
+            Step,
+            /// The sigmoid activation function: <https://en.wikipedia.org/wiki/Sigmoid_function>
+            Sigmoid,
+            /// The Hyperbolic Tangent activation function.
+            HyperTan,
+            /// The SiLU (Swish) activation function: <https://en.wikipedia.org/wiki/Rectified_linear_unit#SiLU>
+            SiLU,
+            /// The ReLU activation function: <https://en.wikipedia.org/wiki/Rectified_linear_unit>
+            ReLU,
+            /// The Leaky ReLU activation function: <https://en.wikipedia.org/wiki/Rectified_linear_unit#Piecewise-linear_variants>
+            LeakyReLU,
+            /// The Swish activation function: <https://en.wikipedia.org/wiki/Swish_function>
+            #[deprecated(since="0.0.2", note="Please use SiLU instead")]
+            Swish
+        }
+
+        impl From<Activation> for neuralib::activation::Activation {
+            fn from(a: Activation) -> Self {
+                match a {
+                    Activation::Linear => neuralib::activation::Activation::Linear,
+                    Activation::Step => neuralib::activation::Activation::Step,
+                    Activation::Sigmoid => neuralib::activation::Activation::Sigmoid,
+                    Activation::HyperTan => neuralib::activation::Activation::HyperTan,
+                    Activation::SiLU => neuralib::activation::Activation::SiLU,
+                    Activation::ReLU => neuralib::activation::Activation::ReLU,
+                    Activation::LeakyReLU => neuralib::activation::Activation::LeakyReLU,
+                    #[allow(deprecated)]
+                    Activation::Swish => neuralib::activation::Activation::Swish,
+                }
+            }
+        }
+    }
+}
