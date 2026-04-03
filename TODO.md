@@ -16,3 +16,5 @@
 - Move input_neurons into the layer_neurons arg
 - If possible, move python library into main library and make available with a feature
 - Remove swish
+- Improve errors (for example, passing an incorrect output size DataValue to loss_with_value gives an error saying the input size was wrong)
+- Support idx in the python library

@@ -1,5 +1,5 @@
 use pyo3::prelude::*;
-use pyo3::exceptions::PyValueError;
+use pyo3::exceptions::PyException;
 
 
 // Converting Box<dyn std::error::Error> into a PyErr
@@ -15,7 +15,8 @@ impl From<Box<dyn std::error::Error>> for ErrorMessage {
 
 impl From<ErrorMessage> for PyErr {
     fn from(error: ErrorMessage) -> Self {
-        PyValueError::new_err(error.message)
+        // Just throw a generic exception
+        PyException::new_err(error.message)
     }
 }
 
@@ -36,14 +37,46 @@ mod neuralib_rs_cffi {
             inner_network: neuralib::network::NeuralNetwork
         }
 
-        // pub fn new(layer_sizes: &[usize], input_size: usize, activation_functions: Vec<Activation>) -> crate::error::Result<NeuralNetwork> {
-
         #[pymethods]
         impl NeuralNetwork {
             #[new]
             fn __new__(layer_sizes: Vec<usize>, input_size: usize, activation_functions: Vec<super::activation::Activation>) -> crate::PyAnyResult<Self> {
                 Ok(NeuralNetwork { inner_network: neuralib::network::NeuralNetwork::new(&layer_sizes, input_size, activation_functions.into_iter().map(|func| func.into()).collect())? })
             }
+
+            fn activate(&mut self, inputs: Vec<f64>) -> crate::PyAnyResult<Vec<f64>> {
+                Ok(self.inner_network.activate(&inputs)?)
+            }
+
+            fn get_layer_count(&self) -> usize {
+                self.inner_network.get_layer_count()
+            }
+
+            fn loss_with_value(&mut self, value: &super::training::DataValue) -> crate::PyAnyResult<f64> {
+                Ok(self.inner_network.loss_with_value(&value.inner_value)?)
+            }
+
+            fn loss(&mut self, values: Vec<super::training::DataValue>) -> crate::PyAnyResult<f64> {
+                Ok(self.inner_network.loss(
+                    &values.into_iter().map(|x| x.inner_value).collect::<Vec<_>>()
+                )?)
+            }
+
+            fn learn(&mut self, training_data: Vec<super::training::DataValue>, learn_rate: f64) -> crate::PyAnyResult<()> {
+                Ok(self.inner_network.learn(
+                    &training_data.into_iter().map(|x| x.inner_value).collect::<Vec<_>>(),
+                    learn_rate
+                )?)
+            }
+
+            fn learn_randomly(&mut self, training_data: Vec<super::training::DataValue>, learn_rate: f64, amount: usize) -> crate::PyAnyResult<()> {
+                Ok(self.inner_network.learn_randomly(
+                    &training_data.into_iter().map(|x| x.inner_value).collect::<Vec<_>>(),
+                    learn_rate,
+                    amount
+                )?)
+            }
+
         }
 
         //#[pyfunction]
@@ -89,6 +122,28 @@ mod neuralib_rs_cffi {
                     #[allow(deprecated)]
                     Activation::Swish => neuralib::activation::Activation::Swish,
                 }
+            }
+        }
+    }
+
+    #[pymodule]
+    mod training {
+        use pyo3::prelude::*;
+
+        #[pyclass]
+        #[derive(Clone)]
+        pub struct DataValue {
+            pub inner_value: neuralib::training::DataValue
+        }
+
+        #[pymethods]
+        impl DataValue {
+            #[new]
+            fn __new__(input: Vec<f64>, expected_output: Vec<f64>) -> Self {
+                Self { inner_value: neuralib::training::DataValue {
+                        input,
+                        expected_output
+                }}
             }
         }
     }
