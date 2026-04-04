@@ -1,76 +1,79 @@
+use crate::activation::Activation;
 use crate::layer::Layer;
 use crate::neuron::Neuron;
-use crate::activation::Activation;
 use crate::training::DataValue;
 
 #[cfg(feature = "serde")]
 use {
-	serde::{Serialize, Deserialize},
-	rmp_serde::{Deserializer, Serializer},
+    rmp_serde::{Deserializer, Serializer},
+    serde::{Deserialize, Serialize},
 };
 
 /// A neural network
 #[derive(Debug, Serialize, Deserialize)]
 pub struct NeuralNetwork {
-	layers: Vec<Layer>,
-	layer_count: usize,
-	input_size: usize,
-	output_size: usize,
+    layers: Vec<Layer>,
+    layer_count: usize,
+    input_size: usize,
+    output_size: usize,
 }
 
 impl NeuralNetwork {
-	/// Create a new neural network
-	///
-	/// Arguments:
-	///
-	/// * `layer_sizes` - A slice of usizes containing the size of each layer in the neural network
-	/// * `activation_functions` - A Vec of which activation function should be in each layer 
-	pub fn new(layer_sizes: &[usize], activation_functions: Vec<Activation>) -> crate::error::Result<NeuralNetwork> {
-		let input_size  = layer_sizes[0];
-		let layer_sizes = &layer_sizes[1..];
+    /// Create a new neural network
+    ///
+    /// Arguments:
+    ///
+    /// * `layer_sizes` - A slice of usizes containing the size of each layer in the neural network
+    /// * `activation_functions` - A Vec of which activation function should be in each layer
+    pub fn new(
+        layer_sizes: &[usize],
+        activation_functions: Vec<Activation>,
+    ) -> crate::error::Result<NeuralNetwork> {
+        let input_size = layer_sizes[0];
+        let layer_sizes = &layer_sizes[1..];
 
-		if layer_sizes.is_empty() {
-			return Err(crate::error::NoLayersError {}.into());
-		}
+        if layer_sizes.is_empty() {
+            return Err(crate::error::NoLayersError {}.into());
+        }
 
-		if layer_sizes.len() != activation_functions.len() {
-			// TODO: Make custom error for this
-			return Err(crate::error::NoLayersError {}.into())
-		}
-	
-		// Allocate a vector for the layers
-		let mut layers: Vec<Layer> = Vec::with_capacity(layer_sizes.len());
+        if layer_sizes.len() != activation_functions.len() {
+            // TODO: Make custom error for this
+            return Err(crate::error::NoLayersError {}.into());
+        }
 
-		let mut output_size = 0;
-		
-		let mut previous_size = &input_size;
-		for (layer_size, activator) in layer_sizes.iter().zip(activation_functions) {
-			layers.push(Layer::new(*previous_size, *layer_size, activator));
-			previous_size = layer_size;
-			output_size = *layer_size;
-		}
+        // Allocate a vector for the layers
+        let mut layers: Vec<Layer> = Vec::with_capacity(layer_sizes.len());
 
-		Ok(NeuralNetwork {
-			layer_count: layers.len(),
-			layers,
-			input_size,
-			output_size,
-		})
-	}
+        let mut output_size = 0;
 
-	/// Run the neural network with specific inputs
-	///
-	/// Arguments:
-	///
-	/// * `inputs` - A slice of f64s to be used as input to the network
-	pub fn activate(&mut self, inputs: &[f64]) -> crate::error::Result<Vec<f64>> {
-		if inputs.len() != self.input_size {
+        let mut previous_size = &input_size;
+        for (layer_size, activator) in layer_sizes.iter().zip(activation_functions) {
+            layers.push(Layer::new(*previous_size, *layer_size, activator));
+            previous_size = layer_size;
+            output_size = *layer_size;
+        }
+
+        Ok(NeuralNetwork {
+            layer_count: layers.len(),
+            layers,
+            input_size,
+            output_size,
+        })
+    }
+
+    /// Run the neural network with specific inputs
+    ///
+    /// Arguments:
+    ///
+    /// * `inputs` - A slice of f64s to be used as input to the network
+    pub fn activate(&mut self, inputs: &[f64]) -> crate::error::Result<Vec<f64>> {
+        if inputs.len() != self.input_size {
             return Err(crate::error::InputSizeError {
-                    inputted: inputs.len(),
-                    expected: self.input_size,
-                    chain_depth: "NeuralNetwork".to_owned()
-                }.into()
-            );
+                inputted: inputs.len(),
+                expected: self.input_size,
+                chain_depth: "NeuralNetwork".to_owned(),
+            }
+            .into());
         }
 
         // We have to feed each layer's output into the next layer's input
@@ -78,173 +81,193 @@ impl NeuralNetwork {
         let mut next_in = inputs.to_vec();
 
         for layer in &mut self.layers {
-        	// All the sizes *should* be correct
-        	next_in = layer.activate(&next_in).expect("Length was already checked. This should not fail. (Network)")
+            // All the sizes *should* be correct
+            next_in = layer
+                .activate(&next_in)
+                .expect("Length was already checked. This should not fail. (Network)")
         }
 
         Ok(next_in)
-	}
+    }
 
-	/// Get the number of layers in this neural network
-	pub fn get_layer_count(&self) -> usize {
-		self.layer_count
-	}
+    /// Get the number of layers in this neural network
+    pub fn get_layer_count(&self) -> usize {
+        self.layer_count
+    }
 
-	#[allow(dead_code)]
-	fn get_layer(&self, idx: usize) -> Option<&Layer> {
-		self.layers.get(idx)
-	}
+    #[allow(dead_code)]
+    fn get_layer(&self, idx: usize) -> Option<&Layer> {
+        self.layers.get(idx)
+    }
 
-	fn get_layer_mut(&mut self, idx: usize) -> Option<&mut Layer> {
-		self.layers.get_mut(idx)
-	}
+    fn get_layer_mut(&mut self, idx: usize) -> Option<&mut Layer> {
+        self.layers.get_mut(idx)
+    }
 
-	/// Calculate the loss of the network with a DataValue
-	///
-	/// Arguments:
-	///
-	/// * `value` - A reference to a DataValue
-	pub fn loss_with_value(&mut self, value: &DataValue) -> crate::error::Result<f64> {
-		if value.expected_output.len() != self.output_size {
-			return Err(crate::error::InputSizeError {
-			        inputted: value.expected_output.len(),
-			        expected: self.output_size,
-			        chain_depth: "NeuralNetwork".to_owned()
-			    }.into()
-			);
-		}
-		
-		let output = self.activate(&value.input)?;
+    /// Calculate the loss of the network with a DataValue
+    ///
+    /// Arguments:
+    ///
+    /// * `value` - A reference to a DataValue
+    pub fn loss_with_value(&mut self, value: &DataValue) -> crate::error::Result<f64> {
+        if value.expected_output.len() != self.output_size {
+            return Err(crate::error::InputSizeError {
+                inputted: value.expected_output.len(),
+                expected: self.output_size,
+                chain_depth: "NeuralNetwork".to_owned(),
+            }
+            .into());
+        }
 
-		let mut loss = 0.0;
+        let output = self.activate(&value.input)?;
 
-		for (actual, expected) in output.iter().zip(value.expected_output.iter()) {
-			loss += Neuron::loss(actual, expected);
-		}
+        let mut loss = 0.0;
 
-		Ok(loss)
-	}
+        for (actual, expected) in output.iter().zip(value.expected_output.iter()) {
+            loss += Neuron::loss(actual, expected);
+        }
 
-	/// Calculate the average loss for a slice of DataValues.
-	/// This method should be preferred over `loss_with_value`
-	///
-	/// Arguments:
-	///
-	/// * `values` - A slice of DataValues to test
-	pub fn loss(&mut self, values: &[DataValue]) -> crate::error::Result<f64> {
-		let mut total_loss = 0.0;
+        Ok(loss)
+    }
 
-		let value_length = values.len();
+    /// Calculate the average loss for a slice of DataValues.
+    /// This method should be preferred over `loss_with_value`
+    ///
+    /// Arguments:
+    ///
+    /// * `values` - A slice of DataValues to test
+    pub fn loss(&mut self, values: &[DataValue]) -> crate::error::Result<f64> {
+        let mut total_loss = 0.0;
 
-		for value in values {
-			total_loss += self.loss_with_value(value)?;
-		}
+        let value_length = values.len();
 
-		Ok(total_loss / (value_length as f64))
-	}
+        for value in values {
+            total_loss += self.loss_with_value(value)?;
+        }
 
-	fn apply_gradients(&mut self, learn_rate: f64) {
-		for layeridx in 0..self.get_layer_count() {
-			let layer = self.get_layer_mut(layeridx).unwrap();
-			for neuronidx in 0..layer.get_neuron_count() {
-				let neuron = layer.get_neuron_mut(neuronidx).unwrap();
-				neuron.apply_gradients(learn_rate);
-			}
-		}
-	}
+        Ok(total_loss / (value_length as f64))
+    }
 
-	/// Train the network on some data
-	///
-	/// Arguments:
-	///
-	/// * `training_data` - The data to train the network on in a slice of DataValues
-	/// * `learn_rate` - How fast the network should try to learn
-	pub fn learn(&mut self, training_data: &[DataValue], learn_rate: f64) -> crate::error::Result<()> {
-		for value in training_data {
-			self.update_all_gradients(value)?;
-		}
+    fn apply_gradients(&mut self, learn_rate: f64) {
+        for layeridx in 0..self.get_layer_count() {
+            let layer = self.get_layer_mut(layeridx).unwrap();
+            for neuronidx in 0..layer.get_neuron_count() {
+                let neuron = layer.get_neuron_mut(neuronidx).unwrap();
+                neuron.apply_gradients(learn_rate);
+            }
+        }
+    }
 
-		self.apply_gradients(learn_rate / (training_data.len() as f64));
+    /// Train the network on some data
+    ///
+    /// Arguments:
+    ///
+    /// * `training_data` - The data to train the network on in a slice of DataValues
+    /// * `learn_rate` - How fast the network should try to learn
+    pub fn learn(
+        &mut self,
+        training_data: &[DataValue],
+        learn_rate: f64,
+    ) -> crate::error::Result<()> {
+        for value in training_data {
+            self.update_all_gradients(value)?;
+        }
 
-		Ok(())
-	}
+        self.apply_gradients(learn_rate / (training_data.len() as f64));
 
+        Ok(())
+    }
 
-	pub fn learn_randomly(&mut self, training_data: &[DataValue], learn_rate: f64, amount: usize) -> crate::error::Result<()> {
-		use rand::seq::SliceRandom;
-		let mut rand_split = training_data.to_vec();
+    pub fn learn_randomly(
+        &mut self,
+        training_data: &[DataValue],
+        learn_rate: f64,
+        amount: usize,
+    ) -> crate::error::Result<()> {
+        use rand::seq::SliceRandom;
+        let mut rand_split = training_data.to_vec();
 
-		// Shuffle the data
-		rand_split.shuffle(&mut rand::rng());
-		// Get the split
-		self.learn(&rand_split[..amount], learn_rate)
-	}
+        // Shuffle the data
+        rand_split.shuffle(&mut rand::rng());
+        // Get the split
+        self.learn(&rand_split[..amount], learn_rate)
+    }
 
-	fn update_all_gradients(&mut self, value: &DataValue) -> crate::error::Result<()> {
-		if value.expected_output.len() != self.output_size {
-			return Err(crate::error::InputSizeError {
-			        inputted: value.expected_output.len(),
-			        expected: self.output_size,
-			        chain_depth: "NeuralNetwork".to_owned()
-			    }.into()
-			);
-		}
+    fn update_all_gradients(&mut self, value: &DataValue) -> crate::error::Result<()> {
+        if value.expected_output.len() != self.output_size {
+            return Err(crate::error::InputSizeError {
+                inputted: value.expected_output.len(),
+                expected: self.output_size,
+                chain_depth: "NeuralNetwork".to_owned(),
+            }
+            .into());
+        }
 
-		// Prep the network
-		self.activate(&value.input)?;
+        // Prep the network
+        self.activate(&value.input)?;
 
-		let output_layer = self.get_layer_mut(self.get_layer_count() - 1).expect("Length was already checked. This should not fail. (Network)");
-		output_layer.update_gradients_output(&value.expected_output);
-		
-		for layeridx in (0..self.get_layer_count()).rev().skip(1) {
-			// Fun borrow checker shenanigans
-			let (up_to_current, past_current) = self.layers.split_at_mut_checked(layeridx+1).expect("Length was already checked. This should not fail. (Network)");
-			let current_layer = up_to_current.get_mut(layeridx).expect("Length was already checked. This should not fail. (Network)");
-			let next_layer = past_current.first().expect("Length was already checked. This should not fail. (Network)");
-			current_layer.update_gradients_hidden(next_layer);
-		}
+        let output_layer = self
+            .get_layer_mut(self.get_layer_count() - 1)
+            .expect("Length was already checked. This should not fail. (Network)");
+        output_layer.update_gradients_output(&value.expected_output);
 
-		Ok(())
-	}
+        for layeridx in (0..self.get_layer_count()).rev().skip(1) {
+            // Fun borrow checker shenanigans
+            let (up_to_current, past_current) = self
+                .layers
+                .split_at_mut_checked(layeridx + 1)
+                .expect("Length was already checked. This should not fail. (Network)");
+            let current_layer = up_to_current
+                .get_mut(layeridx)
+                .expect("Length was already checked. This should not fail. (Network)");
+            let next_layer = past_current
+                .first()
+                .expect("Length was already checked. This should not fail. (Network)");
+            current_layer.update_gradients_hidden(next_layer);
+        }
 
-	#[cfg(feature = "serde")]
-	pub fn save(&self, file: &mut impl std::io::Write) -> std::io::Result<()> {
-		let mut buf = Vec::new();
-		self.serialize(&mut Serializer::new(&mut buf)).unwrap();
+        Ok(())
+    }
 
-		file.write_all(&buf)
-	}
+    #[cfg(feature = "serde")]
+    pub fn save(&self, file: &mut impl std::io::Write) -> std::io::Result<()> {
+        let mut buf = Vec::new();
+        self.serialize(&mut Serializer::new(&mut buf)).unwrap();
 
-	#[cfg(feature = "serde")]
-	pub fn from_saved(file: impl std::io::Read) -> Result<Self, rmp_serde::decode::Error> {
-		//let mut buf = Vec::new();
-	
-		//file.read_to_end(&mut buf).unwrap();
+        file.write_all(&buf)
+    }
 
-		//Self::deserialize(&mut Deserializer::new(&buf[..]))
-		Self::deserialize(&mut Deserializer::new(file))
-	}
+    #[cfg(feature = "serde")]
+    pub fn from_saved(file: impl std::io::Read) -> Result<Self, rmp_serde::decode::Error> {
+        //let mut buf = Vec::new();
+
+        //file.read_to_end(&mut buf).unwrap();
+
+        //Self::deserialize(&mut Deserializer::new(&buf[..]))
+        Self::deserialize(&mut Deserializer::new(file))
+    }
 }
 
 #[cfg(test)]
 mod tests {
-	use super::*;
-	
-	#[test]
-	fn methods() {
-		let mut network = NeuralNetwork::new(&[2, 2], 2, vec![Activation::Sigmoid, Activation::Step]).unwrap();
+    use super::*;
 
-		network.activate(&[0.0, 0.0]).unwrap();
+    #[test]
+    fn methods() {
+        let mut network =
+            NeuralNetwork::new(&[2, 2], 2, vec![Activation::Sigmoid, Activation::Step]).unwrap();
 
-		assert_eq!(network.get_layer_count(), 2);
-	}
+        network.activate(&[0.0, 0.0]).unwrap();
 
-	#[test]
-	fn errors() {
-		assert!(NeuralNetwork::new(&[], 0, vec![]).is_err());
-		assert!(NeuralNetwork::new(&[1], 0, vec![]).is_err());
+        assert_eq!(network.get_layer_count(), 2);
+    }
 
-		let mut network = NeuralNetwork::new(&[1], 1, vec![Activation::Linear]).unwrap();
-		assert!(network.activate(&[]).is_err());
-	}
+    #[test]
+    fn errors() {
+        assert!(NeuralNetwork::new(&[], 0, vec![]).is_err());
+        assert!(NeuralNetwork::new(&[1], 0, vec![]).is_err());
+
+        let mut network = NeuralNetwork::new(&[1], 1, vec![Activation::Linear]).unwrap();
+        assert!(network.activate(&[]).is_err());
+    }
 }

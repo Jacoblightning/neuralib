@@ -1,10 +1,10 @@
-use rand::prelude::*;
-use rand_distr::StandardNormal;
 use crate::activation::Activation;
 use crate::layer::Layer;
+use rand::prelude::*;
+use rand_distr::StandardNormal;
 
 #[cfg(feature = "serde")]
-use serde::{Serialize, Deserialize};
+use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Default)]
 pub struct LossGradient {
@@ -37,37 +37,50 @@ impl Neuron {
     pub fn new(input_size: usize, activation: Activation) -> Neuron {
         // Initalize weights based off of https://cs231n.github.io/neural-networks-2/#init
         let divi = (2.0 / (input_size as f64)).sqrt();
-        let weights: Vec<f64> = rand::rng().sample_iter(StandardNormal).take(input_size).map(|x: f64| {x * divi}).collect();
-        
+        let weights: Vec<f64> = rand::rng()
+            .sample_iter(StandardNormal)
+            .take(input_size)
+            .map(|x: f64| x * divi)
+            .collect();
+
         Neuron {
             weights,
             bias: 0.0,
             input_size,
             activation,
-            loss_gradient: LossGradient {loss_gradient_weight: vec![0.0; input_size], loss_gradient_bias: 0.0},
-            cache: DataCache {last_output: 0.0, last_bias: 0.0, last_inputs: vec![0.0; input_size], last_deriv: 0.0},
+            loss_gradient: LossGradient {
+                loss_gradient_weight: vec![0.0; input_size],
+                loss_gradient_bias: 0.0,
+            },
+            cache: DataCache {
+                last_output: 0.0,
+                last_bias: 0.0,
+                last_inputs: vec![0.0; input_size],
+                last_deriv: 0.0,
+            },
         }
     }
     // TODO: Consider making this into a seperate "activate_for_training" method
     pub fn activate(&mut self, inputs: &[f64]) -> crate::error::Result<f64> {
         if inputs.len() != self.input_size {
             return Err(crate::error::InputSizeError {
-                    inputted: inputs.len(),
-                    expected: self.input_size,
-                    chain_depth: "Neuron".to_owned()
-                }.into()
-            );
+                inputted: inputs.len(),
+                expected: self.input_size,
+                chain_depth: "Neuron".to_owned(),
+            }
+            .into());
         }
 
         self.cache.last_inputs = inputs.to_vec();
-        
-        let weighted: f64 = inputs.iter()
-                        // Combine weights and inputs
-                        .zip(self.weights.iter())
-                        // Multiply them together
-                        .map(|zipped| (*zipped.0) * (*zipped.1))
-                        // Sum them up
-                        .sum();
+
+        let weighted: f64 = inputs
+            .iter()
+            // Combine weights and inputs
+            .zip(self.weights.iter())
+            // Multiply them together
+            .map(|zipped| (*zipped.0) * (*zipped.1))
+            // Sum them up
+            .sum();
         // Add the bias
         let biased = weighted + self.bias;
 
@@ -76,7 +89,7 @@ impl Neuron {
         let activated = self.activation.call(biased);
 
         self.cache.last_output = activated;
-        
+
         Ok(activated)
     }
 
@@ -92,12 +105,12 @@ impl Neuron {
 
     /// Loss function for a single generic neuron
     pub fn loss(output: &f64, expected_output: &f64) -> f64 {
-    	(output - expected_output).powi(2)
+        (output - expected_output).powi(2)
     }
 
     /// The (partial) derivative for the above loss function
     pub fn deriv_loss(output: &f64, expected_output: &f64) -> f64 {
-    	2.0 * (output - expected_output)
+        2.0 * (output - expected_output)
     }
 
     /// I couldn't think of a better name for this. It's kind of like the derivative for the whole neuron (only for output neurons)
@@ -113,9 +126,15 @@ impl Neuron {
     pub fn calculate_deriv_hidden(&mut self, next_layer: &Layer, self_idx: usize) {
         let mut deriv = 0.0;
         for next_neuron_idx in 0..next_layer.get_neuron_count() {
-            let next_neuron = next_layer.get_neuron(next_neuron_idx).expect("Length was already checked. This should not fail. (Neuron)");
+            let next_neuron = next_layer
+                .get_neuron(next_neuron_idx)
+                .expect("Length was already checked. This should not fail. (Neuron)");
             let next_neuron_deriv = next_neuron.cache.last_deriv;
-            deriv += next_neuron_deriv * next_neuron.weights.get(self_idx).expect("Length was already checked. This should not fail. (Neuron)");            
+            deriv += next_neuron_deriv
+                * next_neuron
+                    .weights
+                    .get(self_idx)
+                    .expect("Length was already checked. This should not fail. (Neuron)");
         }
         deriv *= self.activation.derivative(self.cache.last_bias);
         self.cache.last_deriv = deriv;
@@ -140,7 +159,7 @@ impl Neuron {
     pub fn get_bias(&self) -> &f64 {
         &self.bias
     }
-    
+
     pub fn get_bias_mut(&mut self) -> &mut f64 {
         &mut self.bias
     }
@@ -149,7 +168,7 @@ impl Neuron {
     pub fn get_loss_gradient_mut(&mut self) -> &mut LossGradient {
         &mut self.loss_gradient
     }
-    
+
     pub fn get_weight_count(&self) -> usize {
         self.input_size
     }
@@ -171,14 +190,21 @@ impl Neuron {
     pub fn update_gradients(&mut self) {
         let neuron_deriv = self.cache.last_deriv;
         for inputidx in 0..self.get_weight_count() {
-            *self.loss_gradient.loss_gradient_weight.get_mut(inputidx)
-                .expect("Length was already checked. This should not fail. (Neuron)") += self.cache.last_inputs.get(inputidx).expect("Length was already checked. This should not fail. (Neuron)") * neuron_deriv
+            *self
+                .loss_gradient
+                .loss_gradient_weight
+                .get_mut(inputidx)
+                .expect("Length was already checked. This should not fail. (Neuron)") += self
+                .cache
+                .last_inputs
+                .get(inputidx)
+                .expect("Length was already checked. This should not fail. (Neuron)")
+                * neuron_deriv
         }
         // This will be averaged out in the learn function because the learn rate is divided by the batch size
         self.loss_gradient.loss_gradient_bias += neuron_deriv;
     }
 }
-
 
 #[cfg(test)]
 mod tests {
@@ -194,7 +220,6 @@ mod tests {
             loss_gradient: LossGradient::default(),
             cache: DataCache::default(),
         };
-
 
         assert_eq!(neuron.activate(&vec![0.0]).unwrap(), 0.0);
         assert_eq!(neuron.activate(&vec![1.0]).unwrap(), 1.0);
@@ -214,7 +239,6 @@ mod tests {
             loss_gradient: LossGradient::default(),
             cache: DataCache::default(),
         };
-
 
         assert_eq!(neuron.activate(&vec![3.0, 2.0]).unwrap(), 11.0);
         assert_eq!(neuron.activate(&vec![8.0, 2.0]).unwrap(), 21.0);

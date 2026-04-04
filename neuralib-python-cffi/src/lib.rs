@@ -1,15 +1,16 @@
-use pyo3::prelude::*;
 use pyo3::exceptions::PyException;
-
+use pyo3::prelude::*;
 
 // Converting Box<dyn std::error::Error> into a PyErr
 struct ErrorMessage {
-    message: String
+    message: String,
 }
 
 impl From<Box<dyn std::error::Error>> for ErrorMessage {
     fn from(error: Box<dyn std::error::Error>) -> Self {
-        Self { message: error.to_string() }
+        Self {
+            message: error.to_string(),
+        }
     }
 }
 
@@ -34,14 +35,25 @@ mod neuralib_rs_cffi {
 
         #[pyclass]
         struct NeuralNetwork {
-            inner_network: neuralib::network::NeuralNetwork
+            inner_network: neuralib::network::NeuralNetwork,
         }
 
         #[pymethods]
         impl NeuralNetwork {
             #[new]
-            fn __new__(layer_sizes: Vec<usize>, activation_functions: Vec<super::activation::Activation>) -> crate::PyAnyResult<Self> {
-                Ok(NeuralNetwork { inner_network: neuralib::network::NeuralNetwork::new(&layer_sizes, activation_functions.into_iter().map(|func| func.into()).collect())? })
+            fn __new__(
+                layer_sizes: Vec<usize>,
+                activation_functions: Vec<super::activation::Activation>,
+            ) -> crate::PyAnyResult<Self> {
+                Ok(NeuralNetwork {
+                    inner_network: neuralib::network::NeuralNetwork::new(
+                        &layer_sizes,
+                        activation_functions
+                            .into_iter()
+                            .map(|func| func.into())
+                            .collect(),
+                    )?,
+                })
             }
 
             fn activate(&mut self, inputs: Vec<f64>) -> crate::PyAnyResult<Vec<f64>> {
@@ -52,31 +64,51 @@ mod neuralib_rs_cffi {
                 self.inner_network.get_layer_count()
             }
 
-            fn loss_with_value(&mut self, value: &super::training::DataValue) -> crate::PyAnyResult<f64> {
+            fn loss_with_value(
+                &mut self,
+                value: &super::training::DataValue,
+            ) -> crate::PyAnyResult<f64> {
                 Ok(self.inner_network.loss_with_value(&value.inner_value)?)
             }
 
             fn loss(&mut self, values: Vec<super::training::DataValue>) -> crate::PyAnyResult<f64> {
                 Ok(self.inner_network.loss(
-                    &values.into_iter().map(|x| x.inner_value).collect::<Vec<_>>()
+                    &values
+                        .into_iter()
+                        .map(|x| x.inner_value)
+                        .collect::<Vec<_>>(),
                 )?)
             }
 
-            fn learn(&mut self, training_data: Vec<super::training::DataValue>, learn_rate: f64) -> crate::PyAnyResult<()> {
+            fn learn(
+                &mut self,
+                training_data: Vec<super::training::DataValue>,
+                learn_rate: f64,
+            ) -> crate::PyAnyResult<()> {
                 Ok(self.inner_network.learn(
-                    &training_data.into_iter().map(|x| x.inner_value).collect::<Vec<_>>(),
-                    learn_rate
-                )?)
-            }
-
-            fn learn_randomly(&mut self, training_data: Vec<super::training::DataValue>, learn_rate: f64, amount: usize) -> crate::PyAnyResult<()> {
-                Ok(self.inner_network.learn_randomly(
-                    &training_data.into_iter().map(|x| x.inner_value).collect::<Vec<_>>(),
+                    &training_data
+                        .into_iter()
+                        .map(|x| x.inner_value)
+                        .collect::<Vec<_>>(),
                     learn_rate,
-                    amount
                 )?)
             }
 
+            fn learn_randomly(
+                &mut self,
+                training_data: Vec<super::training::DataValue>,
+                learn_rate: f64,
+                amount: usize,
+            ) -> crate::PyAnyResult<()> {
+                Ok(self.inner_network.learn_randomly(
+                    &training_data
+                        .into_iter()
+                        .map(|x| x.inner_value)
+                        .collect::<Vec<_>>(),
+                    learn_rate,
+                    amount,
+                )?)
+            }
         }
     }
 
@@ -125,17 +157,19 @@ mod neuralib_rs_cffi {
         #[pyclass]
         #[derive(Clone)]
         pub struct DataValue {
-            pub inner_value: neuralib::training::DataValue
+            pub inner_value: neuralib::training::DataValue,
         }
 
         #[pymethods]
         impl DataValue {
             #[new]
             fn __new__(input: Vec<f64>, expected_output: Vec<f64>) -> Self {
-                Self { inner_value: neuralib::training::DataValue {
+                Self {
+                    inner_value: neuralib::training::DataValue {
                         input,
-                        expected_output
-                }}
+                        expected_output,
+                    },
+                }
             }
         }
     }

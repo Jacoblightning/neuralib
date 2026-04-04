@@ -2,11 +2,11 @@
 
 mod error;
 
-mod neuron;
+/// Module containing activation functions for a neural network
+pub mod activation;
 mod layer;
 /// Module for creating, training, and running a neural network
 pub mod network;
-/// Module containing activation functions for a neural network
-pub mod activation;
+mod neuron;
 /// Module containing useful structs for training and training data
 pub mod training;
