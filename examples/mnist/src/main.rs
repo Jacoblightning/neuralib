@@ -15,7 +15,7 @@ fn main() {
     let test_data: Vec<DataValue> = DataValue::from_data_label_idx(&mut test_input, &mut test_labels, None).unwrap();
 
     // Network with 784 inputs, 100 hidden, and 10 outputs. Both the hidden layer and the output have sigmoid activation
-    let mut network = NeuralNetwork::new(&[100, 10], 784, vec![Activation::Sigmoid, Activation::Sigmoid]).unwrap();
+    let mut network = NeuralNetwork::new(&[784, 100, 10], vec![Activation::Sigmoid, Activation::Sigmoid]).unwrap();
 
     let bar = ProgressBar::new(epochs);
 

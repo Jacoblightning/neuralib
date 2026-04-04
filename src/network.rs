@@ -255,7 +255,7 @@ mod tests {
     #[test]
     fn methods() {
         let mut network =
-            NeuralNetwork::new(&[2, 2], 2, vec![Activation::Sigmoid, Activation::Step]).unwrap();
+            NeuralNetwork::new(&[2, 2, 2], vec![Activation::Sigmoid, Activation::Step]).unwrap();
 
         network.activate(&[0.0, 0.0]).unwrap();
 
@@ -264,10 +264,10 @@ mod tests {
 
     #[test]
     fn errors() {
-        assert!(NeuralNetwork::new(&[], 0, vec![]).is_err());
-        assert!(NeuralNetwork::new(&[1], 0, vec![]).is_err());
+        assert!(NeuralNetwork::new(&[0], vec![]).is_err());
+        assert!(NeuralNetwork::new(&[0, 1], vec![]).is_err());
 
-        let mut network = NeuralNetwork::new(&[1], 1, vec![Activation::Linear]).unwrap();
+        let mut network = NeuralNetwork::new(&[1, 1], vec![Activation::Linear]).unwrap();
         assert!(network.activate(&[]).is_err());
     }
 }
