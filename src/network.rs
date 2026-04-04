@@ -270,4 +270,46 @@ mod tests {
         let mut network = NeuralNetwork::new(&[1, 1], vec![Activation::Linear]).unwrap();
         assert!(network.activate(&[]).is_err());
     }
+
+    #[test]
+    fn train_works() {
+        let mut network = NeuralNetwork::new(&[2, 2, 1], vec![Activation::Sigmoid, Activation::Sigmoid]).unwrap();
+
+        let data: Vec<DataValue> = vec![DataValue{input: vec![0.0, 0.0], expected_output: vec![0.0]}, DataValue{input: vec![1.0, 0.0], expected_output: vec![1.0]}, DataValue{input: vec![0.0, 1.0], expected_output: vec![1.0]}, DataValue{input: vec![1.0, 1.0], expected_output: vec![0.0]}];
+
+        let starting_loss = network.loss(&data).unwrap();
+
+        let _ = network.learn(&data, 0.5);
+
+        let new_loss = network.loss(&data).unwrap();
+
+        // Make sure the network can actually learn
+        assert!(starting_loss>new_loss);
+    }
+
+    #[test]
+    fn xor_train() {
+        // Try 3 times bc it could fail if a bad network is made
+        for _ in 0..3 {
+            let mut network = NeuralNetwork::new(&[2, 2, 1], vec![Activation::Sigmoid, Activation::Sigmoid]).unwrap();
+
+            let data: Vec<DataValue> = vec![DataValue{input: vec![0.0, 0.0], expected_output: vec![0.0]}, DataValue{input: vec![1.0, 0.0], expected_output: vec![1.0]}, DataValue{input: vec![0.0, 1.0], expected_output: vec![1.0]}, DataValue{input: vec![1.0, 1.0], expected_output: vec![0.0]}];
+
+            for _ in 0..50000 {
+                let _ = network.learn(&data, 0.5);
+            }
+
+            // Assert that it learned the general theme
+            // Could fail randomly...
+            if (
+                (network.activate(&[0.0, 0.0]).unwrap()[0].abs()<0.25) &&
+                ((1.0-network.activate(&[1.0, 0.0]).unwrap()[0]).abs()<0.25) &&
+                ((1.0-network.activate(&[0.0, 1.0]).unwrap()[0]).abs()<0.25) &&
+                (network.activate(&[1.0, 1.0]).unwrap()[0].abs()<0.25)
+            ) {
+                return
+            }
+        }
+        panic!("Could not train a working network after 3 tries")
+    }
 }
