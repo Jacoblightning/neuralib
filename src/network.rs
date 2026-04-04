@@ -24,9 +24,11 @@ impl NeuralNetwork {
 	/// Arguments:
 	///
 	/// * `layer_sizes` - A slice of usizes containing the size of each layer in the neural network
-	/// * `input_size`  - How many inputs the first layer should accept
 	/// * `activation_functions` - A Vec of which activation function should be in each layer 
-	pub fn new(layer_sizes: &[usize], input_size: usize, activation_functions: Vec<Activation>) -> crate::error::Result<NeuralNetwork> {
+	pub fn new(layer_sizes: &[usize], activation_functions: Vec<Activation>) -> crate::error::Result<NeuralNetwork> {
+		let input_size  = layer_sizes[0];
+		let layer_sizes = &layer_sizes[1..];
+
 		if layer_sizes.is_empty() {
 			return Err(crate::error::NoLayersError {}.into());
 		}

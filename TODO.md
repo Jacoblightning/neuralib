@@ -13,7 +13,7 @@
 - ~~Support for random subset of training data~~
 - Support training after loading a saved model
 - Consider making creation easier by giving a slice of (layer_neurons, activation function) to the cration function
-- Move input_neurons into the layer_neurons arg
+- ~~Move input_neurons into the layer_neurons arg~~
 - If possible, move python library into main library and make available with a feature
 - ~~Remove swish~~
 - Improve errors (for example, passing an incorrect output size DataValue to loss_with_value gives an error saying the input size was wrong)

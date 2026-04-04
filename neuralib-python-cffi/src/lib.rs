@@ -40,8 +40,8 @@ mod neuralib_rs_cffi {
         #[pymethods]
         impl NeuralNetwork {
             #[new]
-            fn __new__(layer_sizes: Vec<usize>, input_size: usize, activation_functions: Vec<super::activation::Activation>) -> crate::PyAnyResult<Self> {
-                Ok(NeuralNetwork { inner_network: neuralib::network::NeuralNetwork::new(&layer_sizes, input_size, activation_functions.into_iter().map(|func| func.into()).collect())? })
+            fn __new__(layer_sizes: Vec<usize>, activation_functions: Vec<super::activation::Activation>) -> crate::PyAnyResult<Self> {
+                Ok(NeuralNetwork { inner_network: neuralib::network::NeuralNetwork::new(&layer_sizes, activation_functions.into_iter().map(|func| func.into()).collect())? })
             }
 
             fn activate(&mut self, inputs: Vec<f64>) -> crate::PyAnyResult<Vec<f64>> {
