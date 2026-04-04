@@ -78,9 +78,6 @@ mod neuralib_rs_cffi {
             }
 
         }
-
-        //#[pyfunction]
-
     }
 
     #[pymodule]
@@ -104,9 +101,6 @@ mod neuralib_rs_cffi {
             ReLU,
             /// The Leaky ReLU activation function: <https://en.wikipedia.org/wiki/Rectified_linear_unit#Piecewise-linear_variants>
             LeakyReLU,
-            /// The Swish activation function: <https://en.wikipedia.org/wiki/Swish_function>
-            #[deprecated(since="0.0.2", note="Please use SiLU instead")]
-            Swish
         }
 
         impl From<Activation> for neuralib::activation::Activation {
@@ -119,8 +113,6 @@ mod neuralib_rs_cffi {
                     Activation::SiLU => neuralib::activation::Activation::SiLU,
                     Activation::ReLU => neuralib::activation::Activation::ReLU,
                     Activation::LeakyReLU => neuralib::activation::Activation::LeakyReLU,
-                    #[allow(deprecated)]
-                    Activation::Swish => neuralib::activation::Activation::Swish,
                 }
             }
         }

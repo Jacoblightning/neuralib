@@ -23,9 +23,6 @@ pub enum Activation {
 	ReLU,
 	/// The Leaky ReLU activation function: <https://en.wikipedia.org/wiki/Rectified_linear_unit#Piecewise-linear_variants>
 	LeakyReLU,
-	/// The Swish activation function: <https://en.wikipedia.org/wiki/Swish_function>
-	#[deprecated(since="0.0.2", note="Please use SiLU instead")]
-	Swish
 }
 
 
@@ -40,8 +37,6 @@ impl Activation {
 			Activation::SiLU      => Activation::si_lu(x),
 			Activation::ReLU      => Activation::re_lu(x),
 			Activation::LeakyReLU => Activation::leaky_re_lu(x),
-			#[allow(deprecated)]
-			Activation::Swish     => Activation::swish(x),
 		}
 	}
 
@@ -54,8 +49,6 @@ impl Activation {
 			Activation::SiLU      => Activation::deriv_si_lu(x),
 			Activation::ReLU      => Activation::deriv_re_lu(x),
 			Activation::LeakyReLU => Activation::deriv_leaky_re_lu(x),
-			#[allow(deprecated)]
-			Activation::Swish     => Activation::deriv_si_lu(x),
 		}
 	}
 
@@ -121,10 +114,6 @@ impl Activation {
 
 	fn leaky_re_lu(x: f64) -> f64 {
 		x.max(x * 0.15)
-	}
-
-	fn swish(x: f64) -> f64 {
-		Activation::si_lu(x)
 	}
 }
 
@@ -218,6 +207,4 @@ mod tests {
     		assert_eq!(act.call(i as f64), i as f64);
     	}
     }
-
-    // Swish just calls SiLU and so doesn't need it's own test
 }
