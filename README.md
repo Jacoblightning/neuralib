@@ -12,3 +12,5 @@ Check out the [wiki](https://github.com/Jacoblightning/neuralib/wiki) for usage
 # Examples
 
 You can find examples in the [examples](https://github.com/Jacoblightning/neuralib/tree/main/examples) directory
+
+[//]: # (<a href="https://deepwiki.com/Jacoblightning/neuralib"><img src="https://deepwiki.com/badge.svg" alt="Ask DeepWiki"></a>)
