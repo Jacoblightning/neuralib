@@ -18,3 +18,4 @@
 - ~~Remove swish~~
 - Improve errors (for example, passing an incorrect output size DataValue to loss_with_value gives an error saying the input size was wrong)
 - Support idx in the python library
+- Documentation for the python module
