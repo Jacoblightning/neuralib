@@ -1,5 +1,5 @@
 [workspace]
-members = ["neuralib-python-cffi"]
+members = ["neuralib-python-ffi"]
 
 [workspace.package]
 version = "0.0.2"

@@ -25,10 +25,10 @@ type PyAnyResult<T> = std::result::Result<T, ErrorMessage>;
 
 /// A Python module implemented in Rust.
 #[pymodule]
-mod neuralib_rs_cffi {
+mod neuralib_rs_ffi {
     use pyo3::prelude::*;
 
-    /// Network module CFFI
+    /// Network module FFI
     #[pymodule]
     mod network {
         use pyo3::prelude::*;

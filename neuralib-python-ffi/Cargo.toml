@@ -1,6 +1,6 @@
 [package]
-name = "neuralib-rs-cffi"
-description = "Python CFFI bindings for neuralib"
+name = "neuralib-rs-ffi"
+description = "Python FFI bindings for neuralib"
 
 version.workspace = true
 edition.workspace = true
@@ -10,7 +10,7 @@ repository.workspace = true
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 [lib]
-name = "neuralib_rs_cffi"
+name = "neuralib_rs_ffi"
 crate-type = ["cdylib"]
 
 [dependencies]
