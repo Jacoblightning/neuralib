@@ -29,12 +29,12 @@ impl NeuralNetwork {
         layer_sizes: &[usize],
         activation_functions: Vec<Activation>,
     ) -> crate::error::Result<NeuralNetwork> {
+		if layer_sizes.len() < 2 {
+			return Err(crate::error::NoLayersError {}.into());
+		}
+
         let input_size = layer_sizes[0];
         let layer_sizes = &layer_sizes[1..];
-
-        if layer_sizes.is_empty() {
-            return Err(crate::error::NoLayersError {}.into());
-        }
 
         if layer_sizes.len() != activation_functions.len() {
             // TODO: Make custom error for this
