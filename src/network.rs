@@ -264,8 +264,12 @@ mod tests {
 
     #[test]
     fn errors() {
+        assert!(NeuralNetwork::new(&[], vec![]).is_err());
         assert!(NeuralNetwork::new(&[0], vec![]).is_err());
+        assert!(NeuralNetwork::new(&[0, 0], vec![]).is_err());
         assert!(NeuralNetwork::new(&[0, 1], vec![]).is_err());
+        assert!(NeuralNetwork::new(&[], vec![Activation::Linear]).is_err());
+        assert!(NeuralNetwork::new(&[0], vec![Activation::Linear]).is_err());
 
         let mut network = NeuralNetwork::new(&[1, 1], vec![Activation::Linear]).unwrap();
         assert!(network.activate(&[]).is_err());
