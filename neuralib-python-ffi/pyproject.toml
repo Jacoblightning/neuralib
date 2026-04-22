@@ -9,5 +9,7 @@ classifiers = [
     "Programming Language :: Rust",
     "Programming Language :: Python :: Implementation :: CPython",
     "Programming Language :: Python :: Implementation :: PyPy",
+    # Close enough to Neural Network/Machine Learning
+    "Topic :: Scientific/Engineering :: Artificial Intelligence"
 ]
 dynamic = ["version"]
