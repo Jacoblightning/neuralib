@@ -2,7 +2,7 @@
 members = ["neuralib-python-ffi"]
 
 [workspace.package]
-version = "0.0.2"
+version = "0.0.3"
 edition = "2024"
 license = "Apache-2.0 OR MIT"
 repository = "https://git.jacoblightning3.xyz/jacoblightning3/neuralib"
