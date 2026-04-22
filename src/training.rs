@@ -51,11 +51,7 @@ impl DataValue {
             .map(|x: Vec<_>| {
                 x.iter()
                     .map(|y| {
-                        y.cast_as::<f64>().unwrap()
-                            / match normalize {
-                                None => 1.0,
-                                Some(val) => val,
-                            }
+                        y.cast_as::<f64>().unwrap() / normalize.unwrap_or(1.0)
                     })
                     .collect::<Vec<_>>()
             })
