@@ -23,7 +23,7 @@ impl From<ErrorMessage> for PyErr {
 
 type PyAnyResult<T> = std::result::Result<T, ErrorMessage>;
 
-/// A Python module implemented in Rust.
+/// Neuralib FFI module
 #[pymodule]
 mod neuralib_rs_ffi {
     use pyo3::prelude::*;
